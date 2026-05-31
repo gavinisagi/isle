@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    // This package is the leaf of the paths graph — it must NOT resolve itself via the base paths map / 协议包是 paths 图的叶子,不能自引用
+    "paths": {}
+  },
+  "include": ["src"]
+}

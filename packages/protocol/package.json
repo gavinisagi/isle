@@ -1,0 +1,23 @@
+{
+  "name": "@isle/protocol",
+  "version": "0.1.0",
+  "description": "The Isle wire contract: render-kind/signal/manifest/action types + hand-written guards. Zero runtime deps. / Isle 协议契约,零运行时依赖",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --max-warnings 0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
