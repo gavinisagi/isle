@@ -1,0 +1,24 @@
+{
+  "name": "isle",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Isle — an always-on Windows dynamic-island host (domain-blind; data comes from out-of-process bricks) / 常驻 Windows 灵动岛宿主",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "dev:host": "pnpm -F @isle/host dev",
+    "dev:mock": "pnpm -F @isle/mock-brick dev",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10",
+    "typescript": "^5.7.2"
+  }
+}

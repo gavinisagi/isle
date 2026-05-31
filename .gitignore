@@ -1,0 +1,35 @@
+# Dependencies / 依赖
+node_modules/
+.pnpm-store/
+
+# Build output / 构建产物
+dist/
+out/
+build/
+*.tsbuildinfo
+
+# Electron packaging / Electron 打包产物
+release/
+packages/host/dist-electron/
+
+# Logs / 日志
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Env / 环境变量
+.env
+.env.*
+!.env.example
+
+# PRD 文档(本地自用,不开源)
+docs/PRD.md
+
+# CLAUDE.md(本地自用,不开源)
+CLAUDE.md
