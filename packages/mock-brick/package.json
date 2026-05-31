@@ -1,0 +1,24 @@
+{
+  "name": "@isle/mock-brick",
+  "version": "0.1.0",
+  "description": "Scripted mock brick — the host's sole acceptance surface. Pushes timed streams + drives failure paths, no real data source. / 脚本化 mock 积木,host 唯一验收载体",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "isle-mock": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --max-warnings 0"
+  },
+  "dependencies": {
+    "@isle/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
