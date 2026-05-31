@@ -1,0 +1,357 @@
+/* Transparent window canvas — only the island itself paints pixels. / 透明窗口画布,只有岛本身上色 */
+:root {
+  --isle-bg: rgba(18, 18, 20, 0.92);
+  --isle-fg: rgba(245, 245, 247, 0.95);
+  --isle-dim: rgba(245, 245, 247, 0.55);
+  --isle-radius: 22px;
+  --tone-up: #34c759;
+  --tone-down: #ff453a;
+  --tone-flat: var(--isle-dim);
+  --tone-neutral: var(--isle-dim);
+  --tone-active: #0a84ff;
+  --tone-attention: #ffd60a;
+  --tone-error: #ff453a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+  /* Never let the shell feel like a draggable document. / 别让壳有可拖选文档的感觉 */
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--isle-fg);
+}
+
+#root {
+  /* Center the island in the (dynamically sized) window. / 在动态尺寸窗口中居中岛 */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100vw;
+  height: 100vh;
+  /* leave room for shadow / spring overshoot (matches useMeasuredBounds MARGIN) / 给阴影/过冲留白(与 hook MARGIN 对应) */
+  padding: 6px;
+}
+
+/* --- The island body / 岛体 --- */
+.isle {
+  background: var(--isle-bg);
+  border-radius: var(--isle-radius);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), inset 0 0 0 0.5px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  overflow: hidden;
+  /* width follows content; the spring is driven by Framer `layout` / 宽随内容,弹簧由 Framer layout 驱动 */
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.isle--expanded {
+  border-radius: 18px;
+  cursor: default;
+}
+
+/* --- Collapsed pills row / 收起 pill 行 --- */
+.isle__pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+}
+
+.isle__empty {
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--isle-dim);
+  letter-spacing: 0.08em;
+}
+
+.isle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.isle-pill--dim {
+  opacity: 0.45;
+}
+
+.isle-pill__glyph {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.isle-pill__badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--isle-fg);
+}
+
+.isle-pill__label {
+  font-size: 12px;
+  color: var(--isle-dim);
+}
+
+/* --- Expanded panel / 展开面板 --- */
+.isle__grip {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+  color: var(--isle-dim);
+}
+
+.isle__chevron {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.isle-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px 12px 14px;
+  min-width: 260px;
+}
+
+.isle-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.isle-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.isle-card__glyph {
+  font-size: 15px;
+}
+
+.isle-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.isle-card__conn {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--isle-dim);
+}
+
+.isle-card__body {
+  font-size: 12px;
+  color: var(--isle-fg);
+}
+
+.isle-card__body--degraded {
+  opacity: 0.5; /* last-known value, dimmed / last-known 值,变暗 */
+}
+
+.isle-card__empty {
+  color: var(--isle-dim);
+}
+
+/* conn-state badge colors / 连接态角标配色 */
+.isle-card__conn--connected {
+  color: var(--tone-active);
+}
+.isle-card__conn--connecting,
+.isle-card__conn--discovered {
+  color: var(--isle-dim);
+}
+.isle-card__conn--disconnected,
+.isle-card__conn--stale {
+  color: var(--tone-error);
+}
+
+/* --- tone → color (the host's only semantic output) / tone→色(host 唯一语义输出) --- */
+.tone-up {
+  color: var(--tone-up);
+}
+.tone-down {
+  color: var(--tone-down);
+}
+.tone-flat {
+  color: var(--tone-flat);
+}
+.tone-neutral {
+  color: var(--tone-neutral);
+}
+.tone-active {
+  color: var(--tone-active);
+}
+.tone-attention {
+  color: var(--tone-attention);
+}
+.tone-error {
+  color: var(--tone-error);
+}
+
+/* --- render kinds / 渲染词表 --- */
+.rk-empty {
+  color: var(--isle-dim);
+  font-size: 12px;
+}
+
+/* list */
+.rk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rk-list__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.rk-list__item--done .rk-list__text {
+  text-decoration: line-through;
+  color: var(--isle-dim);
+}
+.rk-list__text {
+  flex: 1;
+}
+.rk-list__badge {
+  font-size: 10px;
+  padding: 0 5px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* metrics */
+.rk-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rk-metrics__row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+}
+.rk-metrics__label {
+  flex: 1;
+  color: var(--isle-dim);
+}
+.rk-metrics__value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.rk-metrics__delta {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* status */
+.rk-status {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.rk-status__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.rk-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  color: var(--isle-dim);
+  flex: none;
+}
+.rk-status__label {
+  font-weight: 600;
+}
+.rk-status__state {
+  color: var(--isle-dim);
+  font-size: 11px;
+}
+.rk-status__detail {
+  margin-left: auto;
+  color: var(--isle-dim);
+  font-size: 11px;
+}
+
+/* text */
+.rk-text {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.5;
+}
+.rk-text__block {
+  margin: 0 0 4px;
+}
+
+/* control */
+.rk-control {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rk-control__btn {
+  font: inherit;
+  font-size: 12px;
+  color: var(--isle-fg);
+  background: rgba(255, 255, 255, 0.1);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.rk-control__btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.rk-control__btn:active {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* view */
+.rk-view {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rk-view__frame {
+  width: 100%;
+  min-width: 220px;
+  min-height: 76px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+}
+
+/* --- attention emphasis / 注意力强调 --- */
+.isle--attention {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 0 1.5px var(--tone-attention),
+    0 0 18px rgba(255, 214, 10, 0.35);
+}
+.isle-pill--attention .isle-pill__badge {
+  background: var(--tone-attention);
+  color: #1a1a00;
+}

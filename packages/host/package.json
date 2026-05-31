@@ -1,0 +1,32 @@
+{
+  "name": "@isle/host",
+  "version": "0.1.0",
+  "description": "Isle host — the always-on dynamic-island Electron app. Domain-blind: renders render-kinds, knows no business logic. / 灵动岛宿主 Electron 应用",
+  "private": true,
+  "main": "./dist-electron/main/main.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@isle/protocol": "workspace:*",
+    "chokidar": "^4.0.1",
+    "esbuild": "^0.24.0",
+    "framer-motion": "^11.11.17",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.1",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
+  }
+}
