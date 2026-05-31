@@ -48,12 +48,10 @@ function main(): void {
   for (const preset of presets) {
     registerManifest(preset);
 
-    // `let` so the onAction closure can reach the server's own broadcast. / 用 let 让 onAction 闭包能拿到 server 自身的 broadcast
-    let server: BrickServer;
-    server = createBrickServer({
+    // const is fine: the onAction closure reads `server` only when invoked later. / const 即可:onAction 闭包仅在稍后被调用时读 server
+    const server: BrickServer = createBrickServer({
       port: preset.manifest.port,
       onAction: (frame) => {
-        // eslint-disable-next-line no-console
         console.log(`[${preset.manifest.id}] action: ${frame.name} / 收到动作`);
         preset.onAction?.(frame, server.broadcast);
       },
@@ -61,7 +59,6 @@ function main(): void {
     servers.push(server);
     cancels.push(runScript(preset.script, server.broadcast));
 
-    // eslint-disable-next-line no-console
     console.log(`▶ ${preset.manifest.id} (${preset.manifest.emits.join(',')}) on :${preset.manifest.port}`);
 
     if (chaosOn) {

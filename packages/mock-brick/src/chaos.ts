@@ -10,7 +10,6 @@ export interface ChaosHandle {
 export function scheduleConnectionDrops(server: BrickServer, intervalMs: number): ChaosHandle {
   const timer = setInterval(() => {
     if (server.clientCount() > 0) {
-      // eslint-disable-next-line no-console
       console.log(`[chaos] dropping ${server.clientCount()} connection(s) / 强断连接`);
       server.dropConnections();
     }
@@ -21,7 +20,6 @@ export function scheduleConnectionDrops(server: BrickServer, intervalMs: number)
 // Take a brick fully offline after a delay (tests "brick down → island survives"). / 延迟后让 brick 彻底下线(测"积木下线→整岛存活")
 export function scheduleOffline(server: BrickServer, afterMs: number, label: string): ChaosHandle {
   const timer = setTimeout(() => {
-    // eslint-disable-next-line no-console
     console.log(`[chaos] ${label} going offline / 下线`);
     server.close();
   }, afterMs);

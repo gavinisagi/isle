@@ -97,4 +97,5 @@ app.on('before-quit', () => {
   unwatch?.();
   unwatchConfig?.();
   bus?.stop();
+  tray?.destroy();
 });
