@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & ideas / 提问与点子
+    url: https://github.com/gavinisagi/isle/discussions
+    about: For open-ended questions or discussion, use Discussions. / 开放式问题或讨论请走 Discussions。
+  - name: Architecture & design rationale / 架构与设计论证
+    url: https://github.com/gavinisagi/isle/blob/main/docs/DESIGN.md
+    about: Read the design rationale and Decisions Log before proposing protocol changes. / 提协议改动前请先读设计论证与 Decisions Log。

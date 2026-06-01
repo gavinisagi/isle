@@ -1,0 +1,57 @@
+name: Brick proposal / 积木提案
+description: Propose a new brick (data source) built on the Isle protocol. / 提议一块建在 Isle 协议之上的新积木(数据源)。
+labels: ["brick"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bricks live **downstream of the protocol** — they're independent processes, not part of host v1. This template helps shape the idea and check it fits the render-kind vocabulary without needing protocol changes. / 积木建在**协议之下游**,是独立进程,不属 host v1。本模板帮你把想法对齐到渲染词表,确认无需改协议。
+  - type: textarea
+    id: source
+    attributes:
+      label: Data source / 数据源
+      description: What does this brick read, and from where? / 这块积木读什么、从哪读?
+      placeholder: "e.g. local CI status from a GitHub Actions API poller / 例如:轮询 GitHub Actions API 的本地 CI 状态"
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Which render kind(s) would it emit? / 它会推哪种渲染词表?
+      multiple: true
+      options:
+        - list
+        - metrics
+        - status
+        - text
+        - control
+        - view
+    validations:
+      required: true
+  - type: textarea
+    id: shape
+    attributes:
+      label: Example signal / 示例 signal
+      description: Show a sample `{ kind, ts, data }` frame, and the meaning→tone mapping done inside the brick. / 给一个 `{ kind, ts, data }` 帧示例,并说明积木内部的 语义→tone 映射。
+      render: jsonc
+      placeholder: |
+        { "kind": "status", "ts": 1730000000,
+          "data": { "items": [ { "label": "build", "state": "running", "tone": "active" } ] } }
+    validations:
+      required: true
+  - type: textarea
+    id: actions
+    attributes:
+      label: Actions (optional) / 动作(可选)
+      description: Any host → brick actions (buttons), and what they do. / 宿主→积木的动作(按钮)及其行为。
+    validations:
+      required: false
+  - type: checkboxes
+    id: fits
+    attributes:
+      label: Fits the protocol / 符合协议
+      options:
+        - label: This maps onto existing render kinds — it does not need new manifest/signal/action fields. / 可映射到现有渲染词表,无需新增 manifest/signal/action 字段。
+          required: true
+        - label: Domain meaning (state semantics) stays in the brick; the host only sees `kind` + `tone`. / 业务含义(state 语义)留在积木内,宿主只看 `kind` + `tone`。
+          required: true
