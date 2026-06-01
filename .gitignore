@@ -31,5 +31,5 @@ pnpm-debug.log*
 # PRD 文档(本地自用,不开源)
 docs/PRD.md
 
-# CLAUDE.md(本地自用,不开源)
-CLAUDE.md
+# STATUS 看板(本地自用,不开源)
+docs/STATUS.md
