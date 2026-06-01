@@ -1,0 +1,58 @@
+name: Bug report / 缺陷报告
+description: Something in the host, protocol, or mock brick is broken. / 宿主、协议或 mock 积木出问题了。
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Isle is **domain-blind** — please report host/protocol behavior, not a specific data source's meaning. / 感谢反馈。Isle 宿主**域无知**,请描述宿主/协议层的行为,而非某个数据源的业务含义。
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area / 涉及部分
+      options:
+        - "@isle/host (shell / bus / render kinds / lifecycle)"
+        - "@isle/protocol (frames / guards)"
+        - "@isle/mock-brick"
+        - Build / tooling / 构建工具链
+        - Other / 其他
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened / 发生了什么
+      description: What you saw vs. what you expected. / 实际现象 vs. 预期。
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: Ideally with the mock brick (`pnpm dev:mock`), since the host is validated by it. / 最好用 mock 积木(`pnpm dev:mock`)复现,宿主即以它验收。
+      placeholder: |
+        1. pnpm dev:host
+        2. pnpm dev:mock
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment / 环境
+      description: OS + version, Node version, pnpm version, display setup (multi-monitor / DPI). / 操作系统与版本、Node、pnpm、显示器配置(多屏 / DPI)。
+      placeholder: |
+        OS: Windows 11 26200
+        Node: 20.x
+        pnpm: 9.15.0
+        Displays: 2× (150% / 100% DPI)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / 日志
+      description: Relevant console output from the main process or renderer. / 主进程或渲染进程的相关控制台输出。
+      render: shell
+    validations:
+      required: false

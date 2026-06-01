@@ -1,0 +1,38 @@
+name: Feature request / 功能请求
+description: Propose a change to the host, shell, or tooling. / 对宿主、岛壳或工具链提一个改动。
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a **new data source or render need**, please use the *Brick proposal* template instead — Isle stays domain-blind, so new data lives in a brick, not the host. / 如果你想要**新数据源或新展示需求**,请改用 *Brick 提案* 模板——Isle 宿主保持域无知,新数据归积木,不进宿主。
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 要解决的问题
+      description: What's painful or missing today? / 当前哪里痛或缺什么?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change / 提议的改动
+      description: What should the host/shell/tooling do? / 宿主/岛壳/工具链应该怎么做?
+    validations:
+      required: true
+  - type: dropdown
+    id: contract
+    attributes:
+      label: Does this touch the protocol contract? / 是否触及协议契约?
+      description: Manifest/signal/action frames are an immutable contract; changes need strong justification. / 三帧是不可变契约,改动需充分理由。
+      options:
+        - "No / 否"
+        - "Yes — and here's why it can't map onto an existing render kind / 是 — 且说明为何无法映射到现有渲染词表"
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered / 考虑过的替代方案
+    validations:
+      required: false
