@@ -14,13 +14,14 @@ const canvas = createCanvas();
 
 ## Document Structure / 文档结构
 
-Docs split by information lifecycle. Public docs live in the repo; the maintainer keeps two private docs local. / 文档按信息生命周期分层。公开文档入库;维护者另有两份私有文档保留在本地。
+Docs split by information lifecycle. Two public docs live in the repo; the maintainer keeps two private docs local. / 文档按信息生命周期分层。两份公开文档入库;维护者另有两份私有文档保留在本地。
 
 - **`CLAUDE.md`** — stable contract & principles, read at session start, rarely changes (public). / 稳定契约与原则,session 启动即读,很少变(公开)。
-- **`docs/PRD.md`** — design rationale + Decisions Log (append-only: add, never rewrite or compress historical decisions; keep it traceable). **Maintainer-local, not tracked in this repo.** / 设计论证 + Decisions Log(append-only:只增不改,绝不重写或压缩历史决策;保持可追溯)。**维护者本地持有,不入库。**
+- **`docs/DESIGN.md`** — public design rationale + a Decisions Log view (architecture, protocol, render kinds, risks, decisions). The published face of the local PRD (public). / 公开设计论证 + Decisions Log 视图(架构/协议/渲染词表/风险/决策);本地 PRD 的公开面(公开)。
+- **`docs/PRD.md`** — the fuller PRD: personas, strategy, success metrics, and the **canonical append-only Decisions Log** (add, never rewrite or compress; keep it traceable). **Maintainer-local, not tracked in this repo.** / 更完整的 PRD:personas/战略/成功指标,以及 **canonical append-only 决策日志**(只增不改不压缩,可追溯)。**维护者本地持有,不入库。**
 - **`docs/STATUS.md`** — current progress board, the day-to-day source of truth. Append to Backlog when adding a feature; move to Done and keep it trim once shipped. **Maintainer-local, not tracked in this repo.** / 当前进度看板,日常事实来源;加功能往 Backlog 追加,完成后移到 Done 并保持精简。**维护者本地持有,不入库。**
 
-**Adding a feature / 加新功能的规矩:** first append a decision to the PRD Decisions Log (with rationale / conflicts), then append an item to STATUS Backlog; only sync `CLAUDE.md` if the protocol contract changed. Throughout, append or move status — never compress or rewrite existing content. / 先往 PRD 的 Decisions Log 追加一条决策(含理由/冲突),再往 STATUS Backlog 追加一项;动了协议契约才同步 CLAUDE.md。全程 append 或移动状态,绝不压缩/重写既有内容。
+**Adding a feature / 加新功能的规矩:** first append a decision to the canonical Decisions Log in `docs/PRD.md` (with rationale / conflicts) and reflect public-safe decisions in the `docs/DESIGN.md` view, then append an item to STATUS Backlog; only sync `CLAUDE.md` if the protocol contract changed. Throughout, append or move status — never compress or rewrite existing content. / 先往 `docs/PRD.md` 的 canonical Decisions Log 追加一条决策(含理由/冲突),并把可公开的决策同步进 `docs/DESIGN.md` 视图,再往 STATUS Backlog 追加一项;动了协议契约才同步 CLAUDE.md。全程 append 或移动状态,绝不压缩/重写既有内容。
 
 ## Commands / 命令 (pnpm monorepo)
 
