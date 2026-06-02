@@ -53,11 +53,12 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
   const handleMouseEnter = (): void => setHovered(true);
   const handleMouseLeave = (): void => setHovered(false);
 
-  // Click toggles expand; expanding opens a grace window so it stays long enough to read / move into. / 点击切换展开;展开时开启宽限期,保证开够时间可读、可移入
+  // Click only EXPANDS (and opens the grace window). It must NOT collapse: the expanded panel holds / 点击只负责展开(并开启宽限期),绝不收回:展开面板内有
+  // interactive content, so clicking content shouldn't dismiss it. Collapse via ×, moving away, or unpin. / 可交互内容,点内容不该把它关掉。收回靠 ×、移开、或取消 pin
   const handleClick = (): void => {
-    const next = !expanded;
-    if (next) graceUntil.current = Date.now() + EXPAND_GRACE_MS;
-    setExpanded(next);
+    if (open) return;
+    graceUntil.current = Date.now() + EXPAND_GRACE_MS;
+    setExpanded(true);
   };
 
   // Auto-collapse policy: collapse only when expanded, not pinned, and the mouse isn't over it — / 自动收回策略:仅"已展开、未 pin、鼠标不在其上"才收——
