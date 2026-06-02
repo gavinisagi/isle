@@ -10,9 +10,11 @@ import { snapshotHasAttention } from './attention.js';
 // Snappy but soft — tuned so the window-resize tracking reads as one motion. / 干脆又柔和,调到与窗口跟随读作一个动作
 const SPRING = { type: 'spring', stiffness: 520, damping: 38, mass: 0.9 } as const;
 
-// Debounce auto-collapse: a click expands → the window resizes/re-centers per frame → that jitter can / 自动收回去抖:点击展开→窗口每帧 resize/重居中→抖动会
-// fire a transient mouse-leave under a stationary cursor. Wait briefly; a re-enter cancels it. / 在静止光标下触发瞬时 leave。略等,re-enter 即取消
-const COLLAPSE_DELAY_MS = 180;
+// After a click-to-expand, keep the island open for this grace period regardless of the mouse, / 点击展开后,这段宽限期内不论鼠标在不在都保持展开,
+// so a click doesn't instantly snap back when the cursor isn't over the (larger) expanded panel. / 避免光标不在(更大的)展开面板内时点击即回弹
+const EXPAND_GRACE_MS = 5000;
+// Minimum debounce on mouse-leave — absorbs the transient leave from the expand-resize jitter. / 鼠标离开的最小去抖——吸收展开 resize 抖动的瞬时离开
+const LEAVE_DEBOUNCE_MS = 180;
 
 interface IslandShellProps {
   snapshot: BusSnapshot;
@@ -24,8 +26,8 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
   // Main owns pin (global hotkey + persistence); we mirror its authoritative state. / main 持有 pin(全局热键+持久化),这里镜像权威态
   const [pinned, setPinned] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  // Pending debounced auto-collapse; cancelled if the mouse comes back. / 待执行的去抖自动收回;鼠标回来即取消
-  const collapseTimer = useRef<number | null>(null);
+  // While Date.now() < this, a click-expanded island won't auto-collapse even if unhovered. / 在此时刻前,点击展开的岛即使未 hover 也不自动收
+  const graceUntil = useRef(0);
 
   // Keep the OS window bound glued to measured content (incl. during the spring). / 让 OS 窗口边界紧贴内容(含弹簧过程)
   useMeasuredBounds(rootRef);
@@ -47,38 +49,26 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
   const bricks = snapshot.bricks;
   const peek = hovered && !open;
 
-  const cancelPendingCollapse = (): void => {
-    if (collapseTimer.current !== null) {
-      window.clearTimeout(collapseTimer.current);
-      collapseTimer.current = null;
-    }
+  // Hover just tracks pointer presence; the collapse policy lives in the effect below. / hover 只记录指针在不在;收回策略在下面的 effect
+  const handleMouseEnter = (): void => setHovered(true);
+  const handleMouseLeave = (): void => setHovered(false);
+
+  // Click toggles expand; expanding opens a grace window so it stays long enough to read / move into. / 点击切换展开;展开时开启宽限期,保证开够时间可读、可移入
+  const handleClick = (): void => {
+    const next = !expanded;
+    if (next) graceUntil.current = Date.now() + EXPAND_GRACE_MS;
+    setExpanded(next);
   };
 
-  // Re-entering (incl. the window jittering back under the cursor mid-expand) cancels a pending collapse. / 重新进入(含展开中窗口移回光标下)取消待收回
-  const handleMouseEnter = (): void => {
-    cancelPendingCollapse();
-    setHovered(true);
-  };
-
-  // Leaving auto-collapses (unless pinned), but DEBOUNCED so a transient leave that's immediately / 离开自动收回(除非已 pin),但去抖——
-  // followed by a re-enter (the expand-resize jitter) doesn't mis-collapse the island. / 随即 re-enter 的瞬时离开(展开抖动)不会误收
-  const handleMouseLeave = (): void => {
-    setHovered(false);
-    if (pinned) return;
-    cancelPendingCollapse();
-    collapseTimer.current = window.setTimeout(() => {
-      collapseTimer.current = null;
-      setExpanded(false);
-    }, COLLAPSE_DELAY_MS);
-  };
-
-  // Clear any pending collapse on unmount. / 卸载时清掉待收回
-  useEffect(
-    () => () => {
-      if (collapseTimer.current !== null) window.clearTimeout(collapseTimer.current);
-    },
-    [],
-  );
+  // Auto-collapse policy: collapse only when expanded, not pinned, and the mouse isn't over it — / 自动收回策略:仅"已展开、未 pin、鼠标不在其上"才收——
+  // never before the post-click grace ends, and with a min debounce to absorb the resize jitter. / 不早于点击宽限期结束,且带最小去抖吸收 resize 抖动
+  // Re-running on [expanded, hovered, pinned] (re-enter / pin / collapse) cancels a pending collapse. / 依赖变化(重进入/pin/已收)取消待收回
+  useEffect(() => {
+    if (!expanded || pinned || hovered) return;
+    const wait = Math.max(graceUntil.current - Date.now(), LEAVE_DEBOUNCE_MS);
+    const id = window.setTimeout(() => setExpanded(false), wait);
+    return () => window.clearTimeout(id);
+  }, [expanded, hovered, pinned]);
 
   // Pin button → ask main to flip pin; main echoes PIN_STATE back to update `pinned`. / pin 按钮→请 main 翻转,main 回推 PIN_STATE 更新 pinned
   const togglePin = (e: MouseEvent): void => {
@@ -102,7 +92,7 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
       className="isle-hit"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => setExpanded((v) => !v)}
+      onClick={handleClick}
     >
       <motion.div
         ref={rootRef}
