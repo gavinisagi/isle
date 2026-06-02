@@ -41,16 +41,6 @@ body {
   padding: 6px;
 }
 
-/* Full-window interactive surface so the transparent shadow ring around the island isn't a dead zone, / 填满整窗的交互层,使岛四周的透明阴影环不再是点击死区
-   and so only leaving the WINDOW (not the island element) collapses it. / 且只有离开"窗口"而非岛元素才收回 */
-.isle-hit {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
 /* --- The island body / 岛体 --- */
 .isle {
   background: var(--isle-bg);

@@ -84,24 +84,21 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
     setExpanded(false);
   };
 
-  // Hover/click/leave live on a full-window wrapper, not on `.isle` itself. The window is sized to / 交互(hover/点击/离开)挂在填满整窗的外层,而非 `.isle` 本体。窗口比岛大一圈
-  // content + a shadow/overshoot margin, so there's a transparent ring around the visible island; / (阴影/过冲余量),岛四周有透明环;
-  // binding here means clicking that ring still expands (not a dead zone) and only LEAVING THE WINDOW / 挂在外层→点透明环也能展开(非死区),且只有真正离开窗口
-  // collapses — a transient mouse-leave during the expand resize no longer mis-collapses the island. / 才收回——展开 resize 过程中的瞬时 leave 不再误收
+  // Hover / click / leave bind to the VISIBLE island (`.isle`), not the window. The window has a / hover/点击/离开绑在"可见的岛"`.isle`,而非整窗。窗口含
+  // transparent shadow margin whose edges track mouse-leave unreliably & asymmetrically on a transparent / 透明阴影边距,其各边的 mouse-leave 在透明窗口上不可靠且不对称;
+  // window — leaving the visible island collapses uniformly in every direction. The click-only-expand / 改用"离开可见的岛"则四向一致收回。点击只展开 +
+  // policy + grace window absorb the transient leave from the expand-resize jitter. / 宽限期吸收展开 resize 抖动造成的瞬时离开
   return (
-    <div
-      className="isle-hit"
+    <motion.div
+      ref={rootRef}
+      layout
+      transition={SPRING}
+      className={`isle${open ? ' isle--expanded' : ''}${peek ? ' isle--peek' : ''}${attention ? ' isle--attention' : ''}${pinned ? ' isle--pinned' : ''}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
     >
-      <motion.div
-        ref={rootRef}
-        layout
-        transition={SPRING}
-        className={`isle${open ? ' isle--expanded' : ''}${peek ? ' isle--peek' : ''}${attention ? ' isle--attention' : ''}${pinned ? ' isle--pinned' : ''}`}
-      >
-        {open ? (
+      {open ? (
         <motion.div layout="position" key="expanded">
           {/* Grip bar: drag to move the island (the bar is the OS drag region); buttons stay clickable. / 抓握条:拖动移岛(整条是 OS 拖动区),按钮保持可点 */}
           <div className="isle__grip">
@@ -123,8 +120,7 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
             bricks.map((brick) => <Pill key={brick.manifest.id} brick={brick} showLabel={peek} />)
           )}
         </motion.div>
-        )}
-      </motion.div>
-    </div>
+      )}
+    </motion.div>
   );
 }
