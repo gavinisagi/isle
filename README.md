@@ -99,11 +99,12 @@ pnpm build
 pnpm typecheck
 pnpm lint
 
-# run the host (Electron dev)
-pnpm dev:host
+# run host + mock together, one command / 一键同时起 host + mock
+pnpm dev
 
-# run the mock brick
-pnpm dev:mock
+# …or run them separately / 或分开起
+pnpm dev:host   # the host (Electron dev) / 宿主
+pnpm dev:mock   # the mock brick / mock 积木
 ```
 
 ## Status & Roadmap / 状态与路线

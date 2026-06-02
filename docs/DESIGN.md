@@ -123,6 +123,7 @@
 - **跨平台** —— Windows 优先(白空间所在);macOS/Linux 留后
 - **鉴权 / 权限模型** —— 单机自用、全信任;`view` 第三方化(marketplace)前不开放
 - **可视化设置面板(表单式)** —— 有价值但非 v1;v1 直接改 TS config
+- **Docker 化 host** —— host 是 GUI 桌面悬浮窗,需真实显示/合成,无头容器无法承载;仅未来 brick(无头进程)可由作者自行容器化(见 §10 Q10)
 
 ---
 
@@ -164,6 +165,7 @@
 | Q7 | host 实现范围 | host = 协议 + bus + render + 壳 + 生命周期;真积木(agent 语义/行情/Obsidian)在协议之上、不属 host v1;host 由脚本化 mock 积木验收 | "数据怎么推无所谓"的终点:host 必须域无知,真积木与 host 解耦、可并行交付 |
 | Q8(2026-06-01) | config 是否声明 sources | 否:源发现走目录注册(Q2),config 仅声明 layout(order/overrides/hidden + collapsed 覆盖) | 代码自始按 Q2 实现,§5.4 旧措辞 "config 声明 sources" 与实现不符;此处更正文档对齐现实,非改代码、非压缩历史 |
 | Q9(2026-06-01) | 平台范围 | **Windows-first**(v1 优先),架构经 Electron 跨平台可期;macOS/Linux 全面支持延后 | 协议 / 积木 / SSE 与 OS 无关,Windows 只是白空间所在的优先级而非技术锁死;明确为 "first" 而非 "only",避免对外误读为锁死单平台 |
+| Q10(2026-06-02) | 启动方式 / 容器化 | 加 `pnpm dev` 一键并发启动 host+mock;**Docker 对 GUI host 不适用**,列入 §8 Out of Scope;brick(无头进程)未来可由作者自行容器化 | host 是 Electron 桌面置顶悬浮窗,需真实显示/合成,无头容器跑不了;host 实时监听插件目录,一键启动与顺序无关 |
 
 ---
 
