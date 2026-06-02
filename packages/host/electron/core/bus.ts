@@ -9,6 +9,9 @@ interface Runtime {
   connState: ConnState;
   lastSignal: Signal | null;
   lastSeenTs: number | null;
+  // When the SSE stream became connected (epoch ms), or null while not connected. / SSE 流建立连接的时刻(epoch ms),未连接时为 null
+  // Anchors stale derivation for a brick that connects but has never pushed a signal. / 为"连上但从未推过 signal"的 brick 提供 stale 推导锚点
+  connectedTs: number | null;
   client: SseClient;
 }
 
@@ -45,6 +48,7 @@ export class Bus {
       connState: 'discovered',
       lastSignal: null,
       lastSeenTs: null,
+      connectedTs: null,
       // placeholder; replaced immediately below / 占位,下面立即替换
       client: null as unknown as SseClient,
     };
@@ -59,6 +63,9 @@ export class Bus {
       onState: (state) => {
         const rt = this.bricks.get(manifest.id);
         if (!rt) return;
+        // Stamp connect time on entering 'connected'; clear it once the stream drops. / 进入 connected 记录连接时刻,断流即清除
+        if (state === 'connected') rt.connectedTs ??= Date.now();
+        else rt.connectedTs = null;
         rt.connState = state;
         this.emit();
       },
@@ -91,8 +98,11 @@ export class Bus {
     const now = Date.now();
     const bricks: BrickView[] = [...this.bricks.values()].map((rt) => {
       let connState = rt.connState;
+      // Liveness anchor = last signal, or (if none yet) when the stream connected. / 活性锚点=最近 signal,若从无 signal 则取连接时刻
+      // So a brick that connects but never pushes still goes stale once past its heartbeat window. / 使"连上但永不推数据"的 brick 过 heartbeat 窗口后也能翻 stale
+      const liveness = rt.lastSeenTs ?? rt.connectedTs;
       // Only a live-but-silent brick goes stale; disconnected stays disconnected. / 仅"在线但沉默"判 stale,断连仍为断连
-      if (connState === 'connected' && rt.lastSeenTs !== null && isStale(rt.lastSeenTs, rt.manifest.heartbeat, now)) {
+      if (connState === 'connected' && liveness !== null && isStale(liveness, rt.manifest.heartbeat, now)) {
         connState = 'stale';
       }
       return {
