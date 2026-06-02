@@ -6,7 +6,7 @@ import { placeWindow, watchDisplays } from './window/positioning.js';
 import { wasProgrammatic } from './window/geometry.js';
 import { loadWindowState, saveWindowState } from './window/window-state.js';
 import { createTray } from './tray.js';
-import { pushBusSnapshot, pushPinState, registerIpcHandlers } from './ipc/channels.js';
+import { pushBusSnapshot, pushCollapse, pushPinState, registerIpcHandlers } from './ipc/channels.js';
 import { Bus } from './core/bus.js';
 import { PLUGINS_DIR, scanManifests } from './core/registry.js';
 import { watchPlugins } from './core/watcher.js';
@@ -40,6 +40,13 @@ function bootstrap(): void {
 
   const win = createIslandWindow();
   win.setIgnoreMouseEvents(true, { forward: true }); // start collapsed = click-through / 起始收起=穿透
+
+  // Lost focus (e.g. user clicked another app) → collapse, unless pinned. Reliable where a focused / 失焦(如点了别的 app)→ 收回,除非已 pin。聚焦的透明窗口
+  // transparent window's DOM mouse-leave isn't. The collapsed pill never holds focus, so this only / DOM mouseleave 不可靠时,这是可靠信号;收起 pill 从不持焦,故仅在
+  // fires after the user actually clicked (focused) the expanded island. / 用户真正点过(聚焦了)展开的岛后才触发
+  win.on('blur', () => {
+    if (!win.isDestroyed() && !winState.pinned) pushCollapse(win);
+  });
 
   // Apply layout config on the way out to the renderer (presentation-only). / 出口处应用布局配置(仅展示)
   const pushSnapshot = (): void => {

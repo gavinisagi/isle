@@ -34,6 +34,9 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
 
   useEffect(() => window.isle.onPinState(setPinned), []);
 
+  // Main can force a collapse (e.g. the window lost focus) — a reliable signal where DOM mouse-leave isn't. / main 可强制收回(如窗口失焦)——DOM mouseleave 不可靠时的可靠信号
+  useEffect(() => window.isle.onCollapse(() => setExpanded(false)), []);
+
   // Pinned forces the island open; otherwise it follows click/hover. / pin 时强制展开,否则随点击/hover
   const open = expanded || pinned;
 

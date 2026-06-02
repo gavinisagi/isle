@@ -12,4 +12,6 @@ export const IPC = {
   SET_PINNED: 'isle:set-pinned',
   // main → renderer: authoritative pin state (initial restore / hotkey / echo). / main→renderer 权威 pin 态
   PIN_STATE: 'isle:pin-state',
+  // main → renderer: collapse now (e.g. window lost focus) — reliable where DOM mouse-leave isn't. / main→renderer 立即收回(如窗口失焦)——DOM mouseleave 不可靠时的可靠信号
+  COLLAPSE: 'isle:collapse',
 } as const;

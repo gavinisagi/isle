@@ -42,4 +42,6 @@ export interface IsleBridge {
   setPinned: (pinned: boolean) => void;
   // Authoritative pin state pushed by main: initial restore, hotkey toggle, or echo of setPinned. Returns unsubscribe. / main 推送的权威 pin 态:启动恢复 / 热键 / setPinned 回声。返回取消订阅
   onPinState: (cb: (pinned: boolean) => void) => () => void;
+  // Main asks the renderer to collapse (e.g. window lost focus). Returns unsubscribe. / main 要求 renderer 收回(如窗口失焦)。返回取消订阅
+  onCollapse: (cb: () => void) => () => void;
 }

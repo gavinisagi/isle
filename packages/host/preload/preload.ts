@@ -26,6 +26,11 @@ const bridge: IsleBridge = {
     ipcRenderer.on(IPC.PIN_STATE, listener);
     return () => ipcRenderer.removeListener(IPC.PIN_STATE, listener);
   },
+  onCollapse(cb) {
+    const listener = (): void => cb();
+    ipcRenderer.on(IPC.COLLAPSE, listener);
+    return () => ipcRenderer.removeListener(IPC.COLLAPSE, listener);
+  },
 };
 
 contextBridge.exposeInMainWorld('isle', bridge);

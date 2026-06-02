@@ -46,3 +46,8 @@ export function pushBusSnapshot(win: BrowserWindow, snapshot: BusSnapshot): void
 export function pushPinState(win: BrowserWindow, pinned: boolean): void {
   if (!win.isDestroyed()) win.webContents.send(IPC.PIN_STATE, pinned);
 }
+
+// Ask the renderer to collapse now (reliable signal where DOM mouse-leave isn't, e.g. on blur). / 要求 renderer 立即收回(DOM mouseleave 不可靠时的可靠信号,如失焦)
+export function pushCollapse(win: BrowserWindow): void {
+  if (!win.isDestroyed()) win.webContents.send(IPC.COLLAPSE);
+}
