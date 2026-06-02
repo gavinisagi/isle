@@ -10,6 +10,10 @@ import { snapshotHasAttention } from './attention.js';
 // Snappy but soft — tuned so the window-resize tracking reads as one motion. / 干脆又柔和,调到与窗口跟随读作一个动作
 const SPRING = { type: 'spring', stiffness: 520, damping: 38, mass: 0.9 } as const;
 
+// Debounce auto-collapse: a click expands → the window resizes/re-centers per frame → that jitter can / 自动收回去抖:点击展开→窗口每帧 resize/重居中→抖动会
+// fire a transient mouse-leave under a stationary cursor. Wait briefly; a re-enter cancels it. / 在静止光标下触发瞬时 leave。略等,re-enter 即取消
+const COLLAPSE_DELAY_MS = 180;
+
 interface IslandShellProps {
   snapshot: BusSnapshot;
 }
@@ -20,6 +24,8 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
   // Main owns pin (global hotkey + persistence); we mirror its authoritative state. / main 持有 pin(全局热键+持久化),这里镜像权威态
   const [pinned, setPinned] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  // Pending debounced auto-collapse; cancelled if the mouse comes back. / 待执行的去抖自动收回;鼠标回来即取消
+  const collapseTimer = useRef<number | null>(null);
 
   // Keep the OS window bound glued to measured content (incl. during the spring). / 让 OS 窗口边界紧贴内容(含弹簧过程)
   useMeasuredBounds(rootRef);
@@ -41,11 +47,38 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
   const bricks = snapshot.bricks;
   const peek = hovered && !open;
 
-  // Leaving the island auto-collapses it — unless pinned. / 鼠标离开自动收回——除非已 pin
+  const cancelPendingCollapse = (): void => {
+    if (collapseTimer.current !== null) {
+      window.clearTimeout(collapseTimer.current);
+      collapseTimer.current = null;
+    }
+  };
+
+  // Re-entering (incl. the window jittering back under the cursor mid-expand) cancels a pending collapse. / 重新进入(含展开中窗口移回光标下)取消待收回
+  const handleMouseEnter = (): void => {
+    cancelPendingCollapse();
+    setHovered(true);
+  };
+
+  // Leaving auto-collapses (unless pinned), but DEBOUNCED so a transient leave that's immediately / 离开自动收回(除非已 pin),但去抖——
+  // followed by a re-enter (the expand-resize jitter) doesn't mis-collapse the island. / 随即 re-enter 的瞬时离开(展开抖动)不会误收
   const handleMouseLeave = (): void => {
     setHovered(false);
-    if (!pinned) setExpanded(false);
+    if (pinned) return;
+    cancelPendingCollapse();
+    collapseTimer.current = window.setTimeout(() => {
+      collapseTimer.current = null;
+      setExpanded(false);
+    }, COLLAPSE_DELAY_MS);
   };
+
+  // Clear any pending collapse on unmount. / 卸载时清掉待收回
+  useEffect(
+    () => () => {
+      if (collapseTimer.current !== null) window.clearTimeout(collapseTimer.current);
+    },
+    [],
+  );
 
   // Pin button → ask main to flip pin; main echoes PIN_STATE back to update `pinned`. / pin 按钮→请 main 翻转,main 回推 PIN_STATE 更新 pinned
   const togglePin = (e: MouseEvent): void => {
@@ -67,7 +100,7 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
   return (
     <div
       className="isle-hit"
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={() => setExpanded((v) => !v)}
     >
