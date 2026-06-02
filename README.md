@@ -113,11 +113,11 @@ pnpm dev:mock   # the mock brick / mock 积木
 
 ## Status & Roadmap / 状态与路线
 
-Host **v1 is complete — shipped as [`v0.1.0`](https://github.com/gavinisagi/isle/releases/tag/v0.1.0)**. Protocol + bus + render kinds + shell + lifecycle, validated end-to-end by the **scripted mock brick** — every render kind plus all failure paths (reconnect, slow-response timeout, control→action, brick-offline), no real data source required.
+Host **v1 reached the `v0.1.0` milestone tag** — protocol + bus + render kinds + shell + lifecycle, validated end-to-end by the **scripted mock brick** (every render kind plus all failure paths: reconnect, slow-response timeout, control→action, brick-offline), no real data source required. It's an **internal milestone, not yet a published release** — no real bricks ship with it.
 
-宿主 **v1 已完成,发布为 [`v0.1.0`](https://github.com/gavinisagi/isle/releases/tag/v0.1.0)**。协议 + bus + 渲染词表 + 壳 + 生命周期,由**脚本化 mock 积木**端到端验收——六种 render kind 加全部失败路径(重连、慢响应超时、control→action、积木下线),无需真数据源。
+宿主 **v1 达到 `v0.1.0` 里程碑 tag** —— 协议 + bus + 渲染词表 + 壳 + 生命周期,由**脚本化 mock 积木**端到端验收(六种 render kind 加全部失败路径:重连、慢响应超时、control→action、积木下线),无需真数据源。这是**内部里程碑,尚非对外发布版本**(不附带任何真积木)。
 
-- **v1 — Host** ✅ **shipped (`v0.1.0`)** — protocol + bus + render kinds + shell + lifecycle, mock-all-green. / 已发布(`v0.1.0`)——协议 + bus + 渲染词表 + 壳 + 生命周期,mock 全绿。
+- **v1 — Host** ✅ milestone tagged `v0.1.0` — protocol + bus + render kinds + shell + lifecycle, mock-all-green (not yet a published release). / 里程碑已打 tag `v0.1.0`——协议 + bus + 渲染词表 + 壳 + 生命周期,mock 全绿(尚非对外发布)。
 - **Next — Downstream bricks** real bricks built on the protocol (prices, agents, notes). / 建在协议之上的真积木(行情、agent、笔记)。
 - **Later — Extension bricks & reach** weather / wallpaper (exercising `control` + `view`), and broader cross-platform support. / 天气 / 壁纸(验证 `control` + `view`),以及更广的跨平台支持。
 
