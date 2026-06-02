@@ -89,9 +89,13 @@ http.createServer((req, res) => {
 
 ## Getting started / 开始
 
-Requires **Node ≥ 20** and **pnpm 9** (via Corepack).
+Requires **Node ≥ 20**. pnpm 9 is managed by **Corepack** — enable it once so `pnpm` is on your PATH (the scripts below shell out to `pnpm`). / 需 **Node ≥ 20**;pnpm 9 由 **Corepack** 管理,先一次性启用,让 `pnpm` 进 PATH(下面脚本会调用 `pnpm`)。
 
 ```bash
+# one-time: put the pnpm 9 shim on PATH (Windows: run in an elevated shell, / 一次性:把 pnpm 9 shim 装到 PATH(Windows 需管理员终端,
+# or `corepack enable --install-directory <dir>` into a folder you add to PATH) / 或 enable 到自定义目录再加进 PATH)
+corepack enable pnpm
+
 pnpm install
 
 # build / typecheck / lint across all packages
