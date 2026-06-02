@@ -60,17 +60,24 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
     setExpanded(false);
   };
 
+  // Hover/click/leave live on a full-window wrapper, not on `.isle` itself. The window is sized to / 交互(hover/点击/离开)挂在填满整窗的外层,而非 `.isle` 本体。窗口比岛大一圈
+  // content + a shadow/overshoot margin, so there's a transparent ring around the visible island; / (阴影/过冲余量),岛四周有透明环;
+  // binding here means clicking that ring still expands (not a dead zone) and only LEAVING THE WINDOW / 挂在外层→点透明环也能展开(非死区),且只有真正离开窗口
+  // collapses — a transient mouse-leave during the expand resize no longer mis-collapses the island. / 才收回——展开 resize 过程中的瞬时 leave 不再误收
   return (
-    <motion.div
-      ref={rootRef}
-      layout
-      transition={SPRING}
-      className={`isle${open ? ' isle--expanded' : ''}${peek ? ' isle--peek' : ''}${attention ? ' isle--attention' : ''}${pinned ? ' isle--pinned' : ''}`}
+    <div
+      className="isle-hit"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={handleMouseLeave}
       onClick={() => setExpanded((v) => !v)}
     >
-      {open ? (
+      <motion.div
+        ref={rootRef}
+        layout
+        transition={SPRING}
+        className={`isle${open ? ' isle--expanded' : ''}${peek ? ' isle--peek' : ''}${attention ? ' isle--attention' : ''}${pinned ? ' isle--pinned' : ''}`}
+      >
+        {open ? (
         <motion.div layout="position" key="expanded">
           {/* Grip bar: drag to move the island (the bar is the OS drag region); buttons stay clickable. / 抓握条:拖动移岛(整条是 OS 拖动区),按钮保持可点 */}
           <div className="isle__grip">
@@ -92,7 +99,8 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
             bricks.map((brick) => <Pill key={brick.manifest.id} brick={brick} showLabel={peek} />)
           )}
         </motion.div>
-      )}
-    </motion.div>
+        )}
+      </motion.div>
+    </div>
   );
 }
