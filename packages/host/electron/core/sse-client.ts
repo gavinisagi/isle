@@ -1,7 +1,7 @@
 // One long-lived SSE stream per brick. Reconnects with exponential backoff, resumes via Last-Event-Id. / 每 brick 一条 SSE 长流,指数退避重连,据 Last-Event-Id 续传
 // Every frame is validated by parseSignal at this ingest boundary; bad frames are dropped, never crash. / 每帧在此 ingest 边界经 parseSignal 校验,坏帧丢弃绝不崩
 import http from 'node:http';
-import { SSE_PATH, SSE_SIGNAL_EVENT, parseSignal, type ConnState, type Manifest, type Signal } from '@isle/protocol';
+import { DEFAULT_HEARTBEAT_MS, SSE_PATH, SSE_SIGNAL_EVENT, parseSignal, type ConnState, type Manifest, type Signal } from '@isle/protocol';
 
 export interface SseCallbacks {
   onState: (state: ConnState) => void;
@@ -47,6 +47,9 @@ export class SseClient {
     const req = http.get(
       { host: '127.0.0.1', port: this.manifest.port, path: SSE_PATH, headers },
       (res) => {
+        // Response headers arrived → disable the connect-phase timeout. / 响应头已到,关闭连接阶段超时
+        // A healthy SSE stream is intentionally idle between signals; never time that out. / 健康 SSE 流两帧间本就静默,绝不为此超时
+        req.setTimeout(0);
         if (res.statusCode !== 200) {
           res.destroy();
           this.scheduleReconnect();
@@ -62,7 +65,20 @@ export class SseClient {
       },
     );
     req.on('error', () => this.scheduleReconnect());
+    // Guard ONLY the connect/response phase: a brick that accepts the socket but never sends / 仅守连接/响应阶段:brick 收了 socket 却始终不回响应头
+    // response headers would otherwise hang in 'connecting' forever. Tear down and retry. / 否则会永远卡在 connecting;此处拆除重试
+    // Derived from the manifest heartbeat (conservative default), never a hard-coded threshold. / 据 manifest heartbeat 推导(保守默认),非硬编码阈值
+    req.setTimeout(this.connectTimeoutMs(), () => {
+      req.destroy();
+      this.scheduleReconnect();
+    });
     this.req = req;
+  }
+
+  // Upper bound for receiving response headers, derived from the brick's declared cadence. / 接收响应头的时限,据 brick 声明的节奏推导
+  private connectTimeoutMs(): number {
+    const hb = this.manifest.heartbeat;
+    return hb && hb > 0 ? hb : DEFAULT_HEARTBEAT_MS;
   }
 
   // Split the SSE byte stream on blank lines into events. / 按空行把 SSE 字节流切成事件

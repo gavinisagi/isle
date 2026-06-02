@@ -16,6 +16,7 @@ import { statusPreset } from './scripts/status.script.js';
 import { textPreset } from './scripts/text.script.js';
 import { controlPreset } from './scripts/control.script.js';
 import { viewPreset } from './scripts/view.script.js';
+import { slowPreset } from './scripts/slow.script.js';
 
 // keyed by render kind for friendly CLI selection / 按渲染 kind 建索引,便于 CLI 选择
 const PRESETS: Record<string, Preset> = {
@@ -68,7 +69,16 @@ function main(): void {
     }
   }
 
-  if (chaosOn) console.log('[chaos] enabled / 已启用');
+  if (chaosOn) {
+    // Slow brick: connects but never pushes → host must derive `stale` from heartbeat. / slow 积木:连上但永不推送→host 必须据 heartbeat 推 stale
+    // Deliberately NOT subjected to connection-drops so it stays connected-and-silent. / 故意不注入断连,让它保持"连着且沉默"
+    registerManifest(slowPreset);
+    const slowServer = createBrickServer({ port: slowPreset.manifest.port });
+    servers.push(slowServer);
+    cancels.push(runScript(slowPreset.script, slowServer.broadcast));
+    console.log(`▶ ${slowPreset.manifest.id} (silent, heartbeat ${slowPreset.manifest.heartbeat}ms → stale) on :${slowPreset.manifest.port}`);
+    console.log('[chaos] enabled / 已启用');
+  }
 
   const shutdown = (): void => {
     for (const c of cancels) c();
