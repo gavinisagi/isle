@@ -34,13 +34,9 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
     window.isle.setClickThrough(!(open || hovered));
   }, [open, hovered]);
 
-  // tone:attention → auto pop-open on the rising edge (e.g. an agent starts waiting). / tone:attention 上升沿自动弹开(如某 agent 开始等待)
+  // tone:attention only GLOWS the island/pill (see DESIGN Q12) — it must NOT auto-expand. / tone:attention 只让岛/pill 发光(见 DESIGN Q12),不自动展开
+  // Auto-changing the open state on its own makes the peek/expanded states untestable and is distracting. / 自行切换展开态既难测又打扰
   const attention = snapshotHasAttention(snapshot);
-  const prevAttention = useRef(false);
-  useEffect(() => {
-    if (attention && !prevAttention.current) setExpanded(true);
-    prevAttention.current = attention;
-  }, [attention]);
 
   const bricks = snapshot.bricks;
   const peek = hovered && !open;

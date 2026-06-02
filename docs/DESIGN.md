@@ -106,7 +106,7 @@
 **B3 — agents 积木**
 - 对接本地 claude-control 接口(自实现);把 `{ id, state, title }`(state ∈ active/idle/waiting)映射成 `status`
 - **状态语义在积木里**:active→`tone:active`、idle→`tone:neutral`、waiting→`tone:attention`;host 只认 tone,不认这些词
-- waiting 时 host 据 `tone:attention` 弹开/高亮
+- waiting 时 host 据 `tone:attention` 高亮(岛/pill 发光,见 §10 Q12;不自动展开)
 
 ### 约束与边界情况
 端口冲突 / SSE 断线重连 / 插件慢响应或超时降级 / 多屏 + 不同 DPI 的定位 / 开机自启。
@@ -167,6 +167,7 @@
 | Q9(2026-06-01) | 平台范围 | **Windows-first**(v1 优先),架构经 Electron 跨平台可期;macOS/Linux 全面支持延后 | 协议 / 积木 / SSE 与 OS 无关,Windows 只是白空间所在的优先级而非技术锁死;明确为 "first" 而非 "only",避免对外误读为锁死单平台 |
 | Q10(2026-06-02) | 启动方式 / 容器化 | 加 `pnpm dev` 一键并发启动 host+mock;**Docker 对 GUI host 不适用**,列入 §8 Out of Scope;brick(无头进程)未来可由作者自行容器化 | host 是 Electron 桌面置顶悬浮窗,需真实显示/合成,无头容器跑不了;host 实时监听插件目录,一键启动与顺序无关 |
 | Q11(2026-06-02) | 岛交互:拖动重定位 + pin + 自动收回 | 展开卡片设拖动手柄(`-webkit-app-region: drag`)移动岛,位置持久化到 `~/.island/window-state.json`(非 config);positioning/resize 改为锚点感知(拖过后不再自动居中,仅夹回屏内);pin 经全局热键 + 岛上按钮切换,pin 时强制展开且可交互;非 pin 时鼠标离开自动收回 | 不破"收起态 click-through / 不抢焦点":拖动只在展开态交互手柄,pin 态本就该可交互;位置是窗口状态而非 layout,走独立 state 文件、不进 config(与 Q8 一致) |
+| Q12(2026-06-03) | attention 的 host 反应 | `tone:attention` 时 host **只高亮(岛/pill 发光),不再自动展开**;取消原 §7-B3 的"自动弹开" | 自动切换展开态会自行改变 UI,既打扰又使 peek/展开态无法稳定测试;高亮已足够提示有积木求关注,是否展开交给用户 |
 
 ---
 
