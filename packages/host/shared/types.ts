@@ -17,6 +17,17 @@ export interface BusSnapshot {
   bricks: BrickView[];
 }
 
+// Persisted island window state at ~/.island/window-state.json. NOT layout config (see DESIGN Q11). / 岛窗口状态持久化,非 layout 配置
+export interface WindowState {
+  // Top-left of the window (DIP). / 窗口左上角(DIP)
+  x: number;
+  y: number;
+  // User has dragged the island → stop auto-centering, keep this position. / 用户拖过→停止自动居中,保持此位置
+  placed: boolean;
+  // Pinned = stay expanded + interactive (never auto-collapse, never click-through). / pin=保持展开+可交互(不自动收回、不穿透)
+  pinned: boolean;
+}
+
 // The typed bridge exposed on `window.isle` by the preload script. / preload 在 window.isle 上暴露的类型化桥
 export interface IsleBridge {
   // Subscribe to bus snapshots; returns an unsubscribe fn. / 订阅 bus 快照,返回取消订阅函数
@@ -27,4 +38,8 @@ export interface IsleBridge {
   requestResize: (width: number, height: number) => void;
   // Toggle desktop click-through (collapsed = pass-through, interacting = capture). / 切换桌面穿透(收起=穿透,交互=捕获)
   setClickThrough: (passThrough: boolean) => void;
+  // Tell main the user toggled pin (main persists it + drives never-collapse). / 告知 main 用户切换了 pin(main 持久化并据此不收回)
+  setPinned: (pinned: boolean) => void;
+  // Authoritative pin state pushed by main: initial restore, hotkey toggle, or echo of setPinned. Returns unsubscribe. / main 推送的权威 pin 态:启动恢复 / 热键 / setPinned 回声。返回取消订阅
+  onPinState: (cb: (pinned: boolean) => void) => () => void;
 }

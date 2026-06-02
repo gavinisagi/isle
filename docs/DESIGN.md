@@ -166,6 +166,7 @@
 | Q8(2026-06-01) | config 是否声明 sources | 否:源发现走目录注册(Q2),config 仅声明 layout(order/overrides/hidden + collapsed 覆盖) | 代码自始按 Q2 实现,§5.4 旧措辞 "config 声明 sources" 与实现不符;此处更正文档对齐现实,非改代码、非压缩历史 |
 | Q9(2026-06-01) | 平台范围 | **Windows-first**(v1 优先),架构经 Electron 跨平台可期;macOS/Linux 全面支持延后 | 协议 / 积木 / SSE 与 OS 无关,Windows 只是白空间所在的优先级而非技术锁死;明确为 "first" 而非 "only",避免对外误读为锁死单平台 |
 | Q10(2026-06-02) | 启动方式 / 容器化 | 加 `pnpm dev` 一键并发启动 host+mock;**Docker 对 GUI host 不适用**,列入 §8 Out of Scope;brick(无头进程)未来可由作者自行容器化 | host 是 Electron 桌面置顶悬浮窗,需真实显示/合成,无头容器跑不了;host 实时监听插件目录,一键启动与顺序无关 |
+| Q11(2026-06-02) | 岛交互:拖动重定位 + pin + 自动收回 | 展开卡片设拖动手柄(`-webkit-app-region: drag`)移动岛,位置持久化到 `~/.island/window-state.json`(非 config);positioning/resize 改为锚点感知(拖过后不再自动居中,仅夹回屏内);pin 经全局热键 + 岛上按钮切换,pin 时强制展开且可交互;非 pin 时鼠标离开自动收回 | 不破"收起态 click-through / 不抢焦点":拖动只在展开态交互手柄,pin 态本就该可交互;位置是窗口状态而非 layout,走独立 state 文件、不进 config(与 Q8 一致) |
 
 ---
 

@@ -15,7 +15,8 @@ export function createIslandWindow(): BrowserWindow {
     frame: false,
     transparent: true,
     resizable: false,
-    movable: false,
+    // Movable so a `-webkit-app-region: drag` handle on the expanded card can reposition the island. / 可移动,使展开卡片上的拖动手柄能重定位岛
+    movable: true,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
