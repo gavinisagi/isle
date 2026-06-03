@@ -18,6 +18,19 @@ const bridge: IsleBridge = {
   setClickThrough(passThrough) {
     ipcRenderer.send(IPC.SET_CLICK_THROUGH, passThrough);
   },
+  setPinned(pinned) {
+    ipcRenderer.send(IPC.SET_PINNED, pinned);
+  },
+  onPinState(cb) {
+    const listener = (_e: IpcRendererEvent, pinned: boolean): void => cb(pinned);
+    ipcRenderer.on(IPC.PIN_STATE, listener);
+    return () => ipcRenderer.removeListener(IPC.PIN_STATE, listener);
+  },
+  onCollapse(cb) {
+    const listener = (): void => cb();
+    ipcRenderer.on(IPC.COLLAPSE, listener);
+    return () => ipcRenderer.removeListener(IPC.COLLAPSE, listener);
+  },
 };
 
 contextBridge.exposeInMainWorld('isle', bridge);

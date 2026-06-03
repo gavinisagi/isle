@@ -8,4 +8,10 @@ export const IPC = {
   REQUEST_RESIZE: 'isle:request-resize',
   // renderer → main: toggle click-through. / renderer→main 切换穿透
   SET_CLICK_THROUGH: 'isle:set-click-through',
+  // renderer → main: user toggled pin (persist + drive never-collapse). / renderer→main 用户切换 pin
+  SET_PINNED: 'isle:set-pinned',
+  // main → renderer: authoritative pin state (initial restore / hotkey / echo). / main→renderer 权威 pin 态
+  PIN_STATE: 'isle:pin-state',
+  // main → renderer: collapse now (e.g. window lost focus) — reliable where DOM mouse-leave isn't. / main→renderer 立即收回(如窗口失焦)——DOM mouseleave 不可靠时的可靠信号
+  COLLAPSE: 'isle:collapse',
 } as const;

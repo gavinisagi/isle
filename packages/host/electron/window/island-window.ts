@@ -15,7 +15,8 @@ export function createIslandWindow(): BrowserWindow {
     frame: false,
     transparent: true,
     resizable: false,
-    movable: false,
+    // Movable so a `-webkit-app-region: drag` handle on the expanded card can reposition the island. / 可移动,使展开卡片上的拖动手柄能重定位岛
+    movable: true,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
@@ -29,6 +30,9 @@ export function createIslandWindow(): BrowserWindow {
       nodeIntegration: false,
       // sandbox off so the bundled preload can use Node-built bridge wiring; renderer stays isolated. / 关 sandbox 让打包的 preload 可用 Node 桥接,renderer 仍隔离
       sandbox: false,
+      // Always-on overlay: never throttle timers/rAF when another app is focused — / 常驻覆盖层:别在别的 app 获焦时节流计时器/rAF——
+      // otherwise auto-collapse / spring / resize-tracking stall the moment the island loses foreground. / 否则岛一失去前台,自动收回/弹簧/resize 跟踪就卡住
+      backgroundThrottling: false,
     },
   });
 

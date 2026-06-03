@@ -105,16 +105,44 @@ body {
 }
 
 /* --- Expanded panel / 展开面板 --- */
+/* The grip bar is the OS drag region: drag it to move the island. / 抓握条是 OS 拖动区:拖它移动岛 */
 .isle__grip {
+  -webkit-app-region: drag;
   display: flex;
-  justify-content: center;
-  padding-top: 4px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 10px 0;
   color: var(--isle-dim);
+  cursor: grab;
 }
 
 .isle__chevron {
   font-size: 14px;
   line-height: 1;
+}
+
+/* Buttons opt out of the drag region so they stay clickable. / 按钮退出拖动区以保持可点 */
+.isle__pin,
+.isle__collapse {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: none;
+  padding: 2px 5px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--isle-dim);
+  cursor: pointer;
+}
+
+.isle__pin:hover,
+.isle__collapse:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--isle-fg);
+}
+
+.isle--pinned .isle__pin {
+  color: var(--isle-fg);
 }
 
 .isle-panel {
