@@ -94,7 +94,7 @@ function bootstrap(): void {
       const manifest = bus?.getManifest(brickId);
       if (manifest) postAction(manifest.port, { name: action });
     },
-    isPlaced: () => winState.placed,
+    placedAnchor: () => (winState.placed ? { x: winState.x, y: winState.y } : null),
     onSetPinned: applyPinned,
   });
 

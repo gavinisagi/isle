@@ -31,9 +31,10 @@ body {
 }
 
 #root {
-  /* Center the island in the (dynamically sized) window. / 在动态尺寸窗口中居中岛 */
+  /* Left-anchor the island so it unfolds rightward as it grows (the window keeps its left edge), / 左对齐岛,使其生长时向右展开(窗口保持左缘),
+     avoiding the horizontal jitter that centering + the window-resize lag caused on peek. / 避免 peek 时"居中 + 窗口 resize 延迟"造成的水平抖动 */
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   width: 100vw;
   height: 100vh;
