@@ -7,8 +7,8 @@ import { applyResize } from '../window/resize.js';
 export interface IpcDeps {
   // Wired to the action-client in phase 2; a no-op until bricks exist. / 阶段2 接 action-client,无 brick 时为空操作
   onAction: (brickId: string, action: string) => void;
-  // True once the user has dragged the island → resize keeps its position instead of re-centering. / 用户拖过岛后为真→resize 保持位置而非重居中
-  isPlaced: () => boolean;
+  // The saved drag anchor (top-left) if the user has dragged the island, else null (resize re-centers). / 用户拖过岛则返回保存的拖动锚点(左上角),否则 null(resize 重居中)
+  placedAnchor: () => { x: number; y: number } | null;
   // User toggled pin in the UI → main persists it and echoes the authoritative state back. / 用户在 UI 切换 pin→main 持久化并回推权威态
   onSetPinned: (pinned: boolean) => void;
 }
@@ -17,7 +17,7 @@ export function registerIpcHandlers(win: BrowserWindow, deps: IpcDeps): void {
   // renderer measured content → snap the window bound to fit (anchor-aware: top-center, or keep dragged pos). / renderer 量得内容→窗口边界贴合(锚点感知:顶部居中或保持拖动位)
   ipcMain.on(IPC.REQUEST_RESIZE, (_e, width: unknown, height: unknown) => {
     if (typeof width === 'number' && typeof height === 'number') {
-      applyResize(win, width, height, { isPlaced: deps.isPlaced });
+      applyResize(win, width, height, { placedAnchor: deps.placedAnchor });
     }
   });
 

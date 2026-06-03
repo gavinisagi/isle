@@ -18,23 +18,33 @@ export function applyResize(
   win: BrowserWindow,
   width: number,
   height: number,
-  opts: { isPlaced: () => boolean },
+  opts: { placedAnchor: () => { x: number; y: number } | null },
 ): void {
   if (win.isDestroyed()) return;
   const w = Math.round(Math.max(MIN_W, Math.min(MAX_W, width)));
   const h = Math.round(Math.max(MIN_H, Math.min(MAX_H, height)));
 
-  // Keep the top-left and unfold right/down when growing (or when the user has dragged the island). / 变宽时(或用户拖过岛时)保持左上角、向右/下展开
-  // The content is left-anchored (`#root` flex-start), so a fixed left edge = zero horizontal movement. / 内容左对齐(`#root` flex-start),左缘固定即零水平位移
+  // Dragged: position from the SAVED drag anchor every time, then clamp for display. Using the live / 拖过:每次都从保存的拖动锚点定位,再夹回显示。若用实时
+  // (already-clamped) position would let the anchor "walk" inward across grow→clamp cycles, drifting a / (已被夹过的)位置,锚点会在 grow→clamp 循环中逐步内移,
+  // right-edge island toward center. The saved anchor stays put; only the display is clamped. / 把贴右边的岛拖向中间。保存锚点不动,只夹显示
+  const anchor = opts.placedAnchor();
+  if (anchor) {
+    setBounds(win, { x: anchor.x, y: anchor.y, width: w, height: h });
+    const { x, y } = clampToVisible(win, anchor.x, anchor.y);
+    if (x !== anchor.x || y !== anchor.y) setBounds(win, { x, y, width: w, height: h });
+    return;
+  }
+
+  // Not dragged: grow from the fixed top-left (unfold right/down); content is left-anchored so a fixed / 未拖动:从固定左上角生长(向右/下展开);内容左对齐,左缘固定
+  // left edge = zero horizontal movement. Shrinking re-centers so a resting pill stays centered. / 即零水平位移。收缩则重居中,静止 pill 仍居中
   const cur = win.getBounds();
-  if (opts.isPlaced() || w >= cur.width) {
+  if (w >= cur.width) {
     setBounds(win, { x: cur.x, y: cur.y, width: w, height: h });
-    const { x, y } = clampToVisible(win, cur.x, cur.y); // getBounds() now reflects the new size / 此刻 getBounds 已是新尺寸
+    const { x, y } = clampToVisible(win, cur.x, cur.y);
     if (x !== cur.x || y !== cur.y) setBounds(win, { x, y, width: w, height: h });
     return;
   }
 
-  // Not dragged and shrinking → re-center the smaller island at top-center (resting pill returns to center). / 未拖动且收缩→把更小的岛重新顶部居中(静止 pill 回到居中)
   const { x, y, width: areaW } = screen.getPrimaryDisplay().workArea;
   setBounds(win, { x: Math.round(x + (areaW - w) / 2), y: Math.round(y + TOP_MARGIN), width: w, height: h });
 }
