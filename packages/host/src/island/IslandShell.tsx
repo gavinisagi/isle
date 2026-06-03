@@ -94,7 +94,9 @@ export function IslandShell({ snapshot }: IslandShellProps): JSX.Element {
   return (
     <motion.div
       ref={rootRef}
-      layout
+      // Animate SIZE only — position is owned by `#root` centering + the window resize. Letting framer / 只动尺寸——位置交给 `#root` 居中 + 窗口 resize。让 framer
+      // also animate position fights the per-frame window re-center, which made peek appear then jump right. / 同时动位置会和每帧窗口重居中抢位,导致 peek 先出现再右移
+      layout="size"
       transition={SPRING}
       className={`isle${open ? ' isle--expanded' : ''}${peek ? ' isle--peek' : ''}${attention ? ' isle--attention' : ''}${pinned ? ' isle--pinned' : ''}`}
       onMouseEnter={handleMouseEnter}
