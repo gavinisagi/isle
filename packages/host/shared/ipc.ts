@@ -14,4 +14,10 @@ export const IPC = {
   PIN_STATE: 'isle:pin-state',
   // main → renderer: collapse now (e.g. window lost focus) — reliable where DOM mouse-leave isn't. / main→renderer 立即收回(如窗口失焦)——DOM mouseleave 不可靠时的可靠信号
   COLLAPSE: 'isle:collapse',
+  // renderer → main: begin a JS drag session (peek-row drag, Q14) — main records the window + cursor origin. / renderer→main 开始 JS 拖动会话(peek 整行拖,Q14)——main 记录窗口+光标起点
+  DRAG_START: 'isle:drag-start',
+  // renderer → main: a drag tick — main moves the window to track the OS cursor (DIP). / renderer→main 拖动帧——main 按 OS 光标(DIP)移窗
+  DRAG_MOVE: 'isle:drag-move',
+  // renderer → main: end the drag session — main persists the final position as a user placement. / renderer→main 结束拖动——main 持久化最终位置为用户放置
+  DRAG_END: 'isle:drag-end',
 } as const;

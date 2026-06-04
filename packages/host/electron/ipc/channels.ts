@@ -1,8 +1,9 @@
 // Main-side IPC: receive renderer requests, expose a snapshot pusher. / 主进程 IPC:接收 renderer 请求,暴露快照推送
-import { ipcMain, type BrowserWindow } from 'electron';
+import { ipcMain, screen, type BrowserWindow } from 'electron';
 import { IPC } from '../../shared/ipc.js';
 import type { BusSnapshot } from '../../shared/types.js';
 import { applyResize } from '../window/resize.js';
+import { setPosition } from '../window/geometry.js';
 
 export interface IpcDeps {
   // Wired to the action-client in phase 2; a no-op until bricks exist. / 阶段2 接 action-client,无 brick 时为空操作
@@ -11,6 +12,8 @@ export interface IpcDeps {
   placedAnchor: () => { x: number; y: number } | null;
   // User toggled pin in the UI → main persists it and echoes the authoritative state back. / 用户在 UI 切换 pin→main 持久化并回推权威态
   onSetPinned: (pinned: boolean) => void;
+  // A peek-row drag session ended → persist the final window position as a user placement (Q14). / peek 整行拖动结束→持久化最终窗口位置为用户放置(Q14)
+  onDragEnd: () => void;
 }
 
 export function registerIpcHandlers(win: BrowserWindow, deps: IpcDeps): void {
@@ -34,6 +37,27 @@ export function registerIpcHandlers(win: BrowserWindow, deps: IpcDeps): void {
   // renderer pin button → main owns/persists pin and echoes PIN_STATE back. / renderer pin 按钮→main 持有/持久化 pin 并回推 PIN_STATE
   ipcMain.on(IPC.SET_PINNED, (_e, pinned: unknown) => {
     deps.onSetPinned(Boolean(pinned));
+  });
+
+  // Peek-row JS drag (Q14): track the OS cursor in DIP so the whole row drags without -webkit-app-region / peek 整行 JS 拖动(Q14):按 DIP 跟踪 OS 光标,整行可拖且不用 -webkit-app-region
+  // (which would swallow the click that expands). Each move is programmatic → the 'moved' listener skips / (否则会吞掉展开用的点击)。每次移动都是 programmatic→'moved' 监听跳过,
+  // it; DRAG_END persists exactly once. Cursor is read main-side (authoritative DIP), unaffected by which / DRAG_END 落且仅落一次持久化。光标在 main 端读(权威 DIP),不受窗口
+  // monitor/scale the moving window crosses. / 拖动跨越的显示器/缩放影响
+  let dragOrigin: { winX: number; winY: number; curX: number; curY: number } | null = null;
+  ipcMain.on(IPC.DRAG_START, () => {
+    const b = win.getBounds();
+    const c = screen.getCursorScreenPoint();
+    dragOrigin = { winX: b.x, winY: b.y, curX: c.x, curY: c.y };
+  });
+  ipcMain.on(IPC.DRAG_MOVE, () => {
+    if (!dragOrigin) return;
+    const c = screen.getCursorScreenPoint();
+    setPosition(win, dragOrigin.winX + (c.x - dragOrigin.curX), dragOrigin.winY + (c.y - dragOrigin.curY));
+  });
+  ipcMain.on(IPC.DRAG_END, () => {
+    if (!dragOrigin) return;
+    dragOrigin = null;
+    deps.onDragEnd();
   });
 }
 

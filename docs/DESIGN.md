@@ -168,6 +168,8 @@
 | Q10(2026-06-02) | 启动方式 / 容器化 | 加 `pnpm dev` 一键并发启动 host+mock;**Docker 对 GUI host 不适用**,列入 §8 Out of Scope;brick(无头进程)未来可由作者自行容器化 | host 是 Electron 桌面置顶悬浮窗,需真实显示/合成,无头容器跑不了;host 实时监听插件目录,一键启动与顺序无关 |
 | Q11(2026-06-02) | 岛交互:拖动重定位 + pin + 自动收回 | 展开卡片设拖动手柄(`-webkit-app-region: drag`)移动岛,位置持久化到 `~/.island/window-state.json`(非 config);positioning/resize 改为锚点感知(拖过后不再自动居中,仅夹回屏内);pin 经全局热键 + 岛上按钮切换,pin 时强制展开且可交互;非 pin 时鼠标离开自动收回 | 不破"收起态 click-through / 不抢焦点":拖动只在展开态交互手柄,pin 态本就该可交互;位置是窗口状态而非 layout,走独立 state 文件、不进 config(与 Q8 一致) |
 | Q12(2026-06-03) | attention 的 host 反应 | `tone:attention` 时 host **只高亮(岛/pill 发光),不再自动展开**;取消原 §7-B3 的"自动弹开" | 自动切换展开态会自行改变 UI,既打扰又使 peek/展开态无法稳定测试;高亮已足够提示有积木求关注,是否展开交给用户 |
+| Q13(2026-06-03) | peek 态也可拖动重定位 | peek 态(hover 收起 pill)pill 行内显示一个**独立拖动握把**(`-webkit-app-region: drag`)移动岛;pill 保持 no-drag,点击仍只展开。复用 Q11 的 window-state 持久化 + `moved` 监听 + 锚点感知,无新机制 | 原 Q11 拖动手柄只在展开态;peek 本就因 hover 可交互,故不破收起态 click-through(真收起/非 hover 仍穿透、不显握把)。独立握把避开"同一区域既点击展开又拖动"的冲突:Windows 上 drag region 会吞点击,故拆成握把(drag)+ pill(no-drag 可点) |
+| Q14(2026-06-03) | peek 拖动的交互方式(修正 Q13) | 弃用 Q13 小握把,**改为整个 peek pill 行可拖**:renderer `mousedown` 起 JS 拖动会话,经 IPC 让 main 按 OS 光标(`getCursorScreenPoint`,DIP)`setPosition` 移窗;位移超阈值(~4px)算拖动、否则算点击→展开;`drag-end` 持久化 placed 位置 | 小握把目标太小难瞄,体验差;整行可拖给大目标。不用 `-webkit-app-region: drag`(会吞单击使点击展开失效),改 JS 拖动 + 阈值,单击展开与拖动两不误。移窗用 main 端光标 DIP 坐标(renderer 坐标只判阈值);拖动期 `setPosition` 是 programmatic,`drag-end` 显式持久化。Q11 锚点感知不变 |
 
 ---
 

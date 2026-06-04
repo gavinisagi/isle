@@ -75,6 +75,16 @@ body {
   letter-spacing: 0.08em;
 }
 
+/* Peek row is the drag surface (Q14, supersedes Q13's handle): grab cursor hints "drag to move"; / peek 整行即拖动面(Q14,取代 Q13 握把):grab 光标暗示"拖动移位";
+   a sub-threshold press still falls through to click→expand (handled in IslandShell). / 低于阈值的按下仍落到 click→展开(逻辑在 IslandShell) */
+.isle--peek {
+  cursor: grab;
+}
+
+.isle--peek:active {
+  cursor: grabbing;
+}
+
 .isle-pill {
   display: inline-flex;
   align-items: center;

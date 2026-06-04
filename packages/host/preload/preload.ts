@@ -31,6 +31,15 @@ const bridge: IsleBridge = {
     ipcRenderer.on(IPC.COLLAPSE, listener);
     return () => ipcRenderer.removeListener(IPC.COLLAPSE, listener);
   },
+  dragStart() {
+    ipcRenderer.send(IPC.DRAG_START);
+  },
+  dragMove() {
+    ipcRenderer.send(IPC.DRAG_MOVE);
+  },
+  dragEnd() {
+    ipcRenderer.send(IPC.DRAG_END);
+  },
 };
 
 contextBridge.exposeInMainWorld('isle', bridge);
