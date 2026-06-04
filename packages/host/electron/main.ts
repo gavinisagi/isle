@@ -96,6 +96,12 @@ function bootstrap(): void {
     },
     placedAnchor: () => (winState.placed ? { x: winState.x, y: winState.y } : null),
     onSetPinned: applyPinned,
+    // Peek-row drag ended → persist the dragged-to position as a user placement (Q14). / peek 整行拖动结束→把拖到的位置持久化为用户放置(Q14)
+    onDragEnd: () => {
+      const b = win.getBounds();
+      winState = { ...winState, x: b.x, y: b.y, placed: true };
+      saveWindowState(winState);
+    },
   });
 
   // Global hotkey toggles pin from anywhere. Re-register cleanly in case bootstrap re-runs. / 全局热键随处切换 pin,bootstrap 重跑则干净重注册

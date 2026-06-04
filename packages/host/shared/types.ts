@@ -44,4 +44,10 @@ export interface IsleBridge {
   onPinState: (cb: (pinned: boolean) => void) => () => void;
   // Main asks the renderer to collapse (e.g. window lost focus). Returns unsubscribe. / main 要求 renderer 收回(如窗口失焦)。返回取消订阅
   onCollapse: (cb: () => void) => () => void;
+  // Begin a peek-row drag session: main snapshots the window + cursor origin (Q14). / 开始 peek 整行拖动会话:main 记录窗口+光标起点(Q14)
+  dragStart: () => void;
+  // A drag tick: main moves the window to follow the OS cursor (DIP). / 拖动帧:main 按 OS 光标(DIP)移窗
+  dragMove: () => void;
+  // End the drag session: main persists the final position as a user placement. / 结束拖动:main 持久化最终位置为用户放置
+  dragEnd: () => void;
 }
