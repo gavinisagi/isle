@@ -178,6 +178,7 @@
 | Q17(2026-06-06 · feature) | v0.2.0 (a):prices 下游积木实现规格 | 数据源 yfinance;映射 `metrics`(tone ∈ up/down/flat);key/刷新频率读环境变量 `ISLE_CFG_YFINANCEKEY` / `ISLE_CFG_REFRESHMS`(经 Q16 ② 注入);brick 自取自推,host 不变(域无知,只收 metrics)。依赖 Q16 ①② host 实现先就位才能端到端 | prices 最好测、先行验证真实数据流;领域逻辑全在 brick,host 域无知不破;读 env 取配置贴 `ISLE_CFG_*` 约定 |
 | Q18(2026-06-06 · feature) | v0.2.0 (b):展开态数据块尺寸/形状可调 | 展开态每块卡片右下角拖拽手柄自由调宽/高,尺寸持久化到 `~/.island/window-state.json`(运行时状态,不写回声明式 layout config);不碰 render kind 词表/协议帧/域无知 | 与 Q11 一致:尺寸是窗口状态而非 layout,走独立 state 文件、程序可写,不污染手写 config;调尺寸不涉业务含义 |
 | Q19(2026-06-07 · feature) | 展开态卡片从 flow 改为自由画布定位 | 展开面板改 canvas(absolute,每 brick 一个 `{x,y}`);卡头作拖动手柄(内容区可交互,⚙/resize 手柄 `stopPropagation`);拖动结束轻网格吸附(8px);位置持久化到 `~/.island/window-state.json` 的 `cardPositions`(与 Q18 `cardSizes` 同源,不进 layout config);ExpandedPanel 用 ResizeObserver 算所有卡片并集包络框给 canvas 设显式尺寸,使窗口测量仍贴合;未定位卡片给默认堆叠位置 | 用户要自由摆放而非按行;沿用 Q11/Q18「窗口状态走独立 state 文件」思路;卡头作手柄避开与卡内交互冲突(同 Q14:拖动区吞点击,故限定卡头、内容区留交互) |
+| Q20(2026-06-07 · feature,修正 Q19) | Q19 吸附方式:网格吸附 → 磁吸对齐 | 弃用 8px 网格吸附,改为拖动中实时磁吸:卡片边接近 panel 边缘或他卡边时吸住,支持对齐(同边)+ 贴合拼接(边对对边);同宽/同高时对齐阈值由 8px 加强到 18px,促等尺寸卡排齐;x/y 独立计算可拼成磁贴;松手持久化已吸附位置;暂不画参考线。host 仍域无知(只对不透明几何吸附) | 网格吸附只规整坐标、无对齐/拼合力;用户要 brick 间+边缘磁吸拼成完整展开态;同宽同高加强贴合「等尺寸排齐」直觉;实时吸附手感最佳 |
 
 ---
 
