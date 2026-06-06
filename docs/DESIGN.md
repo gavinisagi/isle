@@ -66,7 +66,11 @@
   "emits": ["metrics"],                          // 声明推哪种 render kind
   "collapsed": { "glyph": "ti-trending-up", "badge": "pnl" },
   "actions": ["refresh"],                        // 宿主可回推的动作(可选)
-  "launch": "node ./plugins/prices/index.js"     // v2 自启用,v1 忽略
+  "config": [                                    // 通用配置 schema;host 域无知渲染表单(Q16)
+    { "key": "yfinanceKey", "label": "YFinance API Key", "type": "secret" },
+    { "key": "refreshMs",   "label": "刷新间隔(ms)",      "type": "number", "default": 600000 }
+  ],
+  "launch": "node ./plugins/prices/index.js"     // host 托管启动(Q16;原 v2 预留,现启用)
 }
 
 // 2. signal —— 插件 → 岛(SSE 长流)
@@ -116,13 +120,13 @@
 ## 8. Out of Scope(v1 明确不做,防止 scope creep)
 
 - **真积木的领域逻辑** —— agent 状态语义、行情 API、Obsidian 解析等**不属 Isle host v1**;host 由 mock 积木验收,真积木是建在协议之上的独立下游交付(见 §7 B1–B3)
-- **插件商城 / 第三方插件分发** —— 早期仅自写自用
+- **公开 package 分发 / 插件商城**(③) —— **仍不做**(Q16):host 只托管「本地 / 自写 / 自行 clone」的 package;公开下载牵涉签名/沙箱/信任的完整安全模型(下载并 spawn 完整权限的 OS 进程,攻击面远大于 view sandbox),留待未来专门版本
 - **可视化节点 dataflow 编辑器** —— 过度设计;单用户、无分叉/transform,节点图不回本
-- **宿主自动 spawn / 监管插件** —— v1 手动起进程;自启留 v2(manifest 已预留 `launch` 字段,不改协议即可升级)
+- ~~**宿主自动 spawn / 监管插件**~~ —— **v0.2.0 起启用**(Q16 ①):host 据 manifest `launch` 托管**本地** brick 进程(spawn + 退出时 kill)。仍不做公开分发(见上)
 - **多用户 / 云端 / 同步**
 - **跨平台** —— Windows 优先(白空间所在);macOS/Linux 留后
 - **鉴权 / 权限模型** —— 单机自用、全信任;`view` 第三方化(marketplace)前不开放
-- **可视化设置面板(表单式)** —— 有价值但非 v1;v1 直接改 TS config
+- **可视化设置面板(表单式)** —— layout 仍直接改 TS config;**例外(Q16 ②)**:brick 自身配置(key/频率)走 host 渲染的**域无知**通用表单(brick 在 manifest `config` 声明字段,host 只按 `type` 渲染、不懂业务含义),值存 `~/.island/plugins/<id>/config.json`、不进 layout config
 - **Docker 化 host** —— host 是 GUI 桌面悬浮窗,需真实显示/合成,无头容器无法承载;仅未来 brick(无头进程)可由作者自行容器化(见 §10 Q10)
 
 ---
@@ -170,6 +174,9 @@
 | Q12(2026-06-03) | attention 的 host 反应 | `tone:attention` 时 host **只高亮(岛/pill 发光),不再自动展开**;取消原 §7-B3 的"自动弹开" | 自动切换展开态会自行改变 UI,既打扰又使 peek/展开态无法稳定测试;高亮已足够提示有积木求关注,是否展开交给用户 |
 | Q13(2026-06-03) | peek 态也可拖动重定位 | peek 态(hover 收起 pill)pill 行内显示一个**独立拖动握把**(`-webkit-app-region: drag`)移动岛;pill 保持 no-drag,点击仍只展开。复用 Q11 的 window-state 持久化 + `moved` 监听 + 锚点感知,无新机制 | 原 Q11 拖动手柄只在展开态;peek 本就因 hover 可交互,故不破收起态 click-through(真收起/非 hover 仍穿透、不显握把)。独立握把避开"同一区域既点击展开又拖动"的冲突:Windows 上 drag region 会吞点击,故拆成握把(drag)+ pill(no-drag 可点) |
 | Q14(2026-06-03) | peek 拖动的交互方式(修正 Q13) | 弃用 Q13 小握把,**改为整个 peek pill 行可拖**:renderer `mousedown` 起 JS 拖动会话,经 IPC 让 main 按 OS 光标(`getCursorScreenPoint`,DIP)`setPosition` 移窗;位移超阈值(~4px)算拖动、否则算点击→展开;`drag-end` 持久化 placed 位置 | 小握把目标太小难瞄,体验差;整行可拖给大目标。不用 `-webkit-app-region: drag`(会吞单击使点击展开失效),改 JS 拖动 + 阈值,单击展开与拖动两不误。移窗用 main 端光标 DIP 坐标(renderer 坐标只判阈值);拖动期 `setPosition` 是 programmatic,`drag-end` 显式持久化。Q11 锚点感知不变 |
+| Q16(2026-06-06 · **契约变更**) | 放宽 host 契约以支持「岛内自托管 + 配置」brick(取 ①②,推迟 ③) | **① host 托管本地 brick**:启用 manifest 早已预留的 `launch`(Q2),host 发现 manifest 后若声明 `launch` 则 spawn 本地进程、退出时 kill;不破协议帧。**② 岛内通用配置**:manifest 新增 capabilities 字段 `config?: { key, label, type ∈ string\|number\|secret, default? }[]`,brick 声明所需配置项,host 渲染**域无知**表单(仅按 `type` 渲染,`secret`→密码框),值存 `~/.island/plugins/<id>/config.json`(不进 layout config)、spawn 时作环境变量 `ISLE_CFG_<KEY>` 注入,不新增运行时帧。**③ 公开 package 下载/marketplace 仍不做**,只托管本地/自写 package。**immutable 原则细化**:signal/action 数据帧仍 immutable;manifest=capabilities 可经正式 dev-constraint 决策向后兼容扩展(保持 MCP-shaped) | (c) 真实诉求是"无需外部手动起程序 + 岛内配 key/频率"的 onboarding 体验,①② 即满足且不破 host 域无知(① 早有预留、② 仅加一个域无知 capabilities 字段);③ 是分发问题、独占一套安全模型(下载并 spawn 完整权限进程,攻击面远大于 view sandbox),故分期 |
+| Q17(2026-06-06 · feature) | v0.2.0 (a):prices 下游积木实现规格 | 数据源 yfinance;映射 `metrics`(tone ∈ up/down/flat);key/刷新频率读环境变量 `ISLE_CFG_YFINANCEKEY` / `ISLE_CFG_REFRESHMS`(经 Q16 ② 注入);brick 自取自推,host 不变(域无知,只收 metrics)。依赖 Q16 ①② host 实现先就位才能端到端 | prices 最好测、先行验证真实数据流;领域逻辑全在 brick,host 域无知不破;读 env 取配置贴 `ISLE_CFG_*` 约定 |
+| Q18(2026-06-06 · feature) | v0.2.0 (b):展开态数据块尺寸/形状可调 | 展开态每块卡片右下角拖拽手柄自由调宽/高,尺寸持久化到 `~/.island/window-state.json`(运行时状态,不写回声明式 layout config);不碰 render kind 词表/协议帧/域无知 | 与 Q11 一致:尺寸是窗口状态而非 layout,走独立 state 文件、程序可写,不污染手写 config;调尺寸不涉业务含义 |
 
 ---
 

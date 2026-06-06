@@ -51,7 +51,7 @@ brick (independent process) → normalized Signal bus → render kinds (host bui
 ### Protocol — the three frames / 协议三帧
 | frame | direction | shape |
 |---|---|---|
-| **manifest** | discovery | `plugin.json` in `~/.island/plugins/<id>/`; declares `port`, `emits`, `collapsed` glyph/badge, optional `actions`, `heartbeat` (ms, host derives stale), `launch` (v2, ignored in v1) |
+| **manifest** | discovery | `plugin.json` in `~/.island/plugins/<id>/`; declares `port`, `emits`, `collapsed` glyph/badge, optional `actions`, `heartbeat` (ms, host derives stale), `config` (Q16: capabilities — brick-declared config fields `{ key, label, type ∈ string\|number\|secret, default? }`; host renders a **domain-blind** form, persists values to `~/.island/plugins/<id>/config.json`, injects them as `ISLE_CFG_<KEY>` env on spawn), `launch` (Q16: host-managed spawn of a **LOCAL** brick — spawn on discovery, kill on host exit; was v2-reserved) |
 | **signal** | brick → host (SSE) | `{ kind, ts, data }` |
 | **action** | host → brick (POST `/action`) | `{ name }` |
 - Transport is **SSE (host opens long stream) + POST**, not WebSocket — a brick must be writable in ~20 lines in any language.
@@ -80,13 +80,13 @@ brick (independent process) → normalized Signal bus → render kinds (host bui
 
 ### Scope / 范围
 - **Host v1 = protocol + bus + render kinds + shell + lifecycle. Nothing else.** Domain logic (agent-state semantics, quote APIs, Obsidian parsing) lives in **downstream bricks** — parallelizable, deferrable, **out of v1**.
-- Out of scope: no plugin marketplace · no host auto-spawn (v1 = manual process start) · no multi-user/cloud/sync · no cross-platform (Windows-first) · no auth model · no visual node/dataflow editor (typed TS config + hot-reload instead).
+- Host **may auto-spawn LOCAL bricks** via manifest `launch` (Q16, v0.2.0): spawn on discovery, kill on host exit. **Still out of scope: no public package download / plugin marketplace** (only local/self-authored/cloned packages — public distribution needs a full signing/sandbox/trust model, deferred). · no multi-user/cloud/sync · no cross-platform (Windows-first) · no auth model · no visual node/dataflow editor (typed TS config + hot-reload; **exception**: brick self-config goes through a host-rendered domain-blind form per manifest `config`, Q16).
 
 ## Conventions / 项目不变量 (non-default — these change how you code)
 
 - **YOU MUST keep the host domain-blind.** Never parse brick data for business meaning in host code; when a feature needs to understand content, normalize it in the brick and push a render kind. Host code only switches on `kind` and colors by `tone`.
 - **`tone` is the host's only semantic output; `state` is an opaque `string`.** Never branch host logic on `state` (no `if (state === 'waiting')`); read `tone`, and do the meaning→tone mapping in the brick.
-- **IMPORTANT: protocol frames are an immutable contract.** Never add or rename manifest/signal/action fields ad hoc; when a brick needs to express something new, map it onto an existing render kind — don't extend the frame.
+- **IMPORTANT: signal/action data frames are an immutable contract; the manifest is the capabilities handshake.** Never add or rename **signal/action** fields, and never add **any** field ad hoc; when a brick needs to express runtime data, map it onto an existing render kind — don't extend a data frame. **Manifest** capabilities fields MAY be extended, but **only via a formal `/dev-constraint` decision**, kept backward-compatible and MCP-shaped (this is how `config` + host-managed `launch` were added — Q16; never repeat it ad hoc).
 - **YOU MUST validate untrusted brick data at the main-process ingest boundary** with `@isle/protocol` guards (`parseSignal`/`parseManifest`). Never trust a frame in the renderer; drop bad frames, never crash the island.
 
 ## Commit & Versioning / 提交与版本
