@@ -1,7 +1,7 @@
 // Main-side IPC: receive renderer requests, expose a snapshot pusher. / 主进程 IPC:接收 renderer 请求,暴露快照推送
 import { ipcMain, screen, type BrowserWindow } from 'electron';
 import { IPC } from '../../shared/ipc.js';
-import type { BrickConfigValues, BusSnapshot, CardSize } from '../../shared/types.js';
+import type { BrickConfigValues, BusSnapshot, CardPos, CardSize } from '../../shared/types.js';
 import { applyResize } from '../window/resize.js';
 import { setPosition } from '../window/geometry.js';
 
@@ -22,6 +22,10 @@ export interface IpcDeps {
   onGetCardSizes: () => Record<string, CardSize>;
   // Renderer finished a card resize drag → persist this brick's size (Q18). / renderer 完成卡片 resize 拖动→持久化该 brick 尺寸(Q18)
   onSetCardSize: (brickId: string, w: number, h: number) => void;
+  // Renderer mounted the expanded panel → return persisted card positions (Q19). / renderer 挂载展开面板→返回已存卡位置(Q19)
+  onGetCardPositions: () => Record<string, CardPos>;
+  // Renderer finished a card drag → persist this brick's canvas position (Q19). / renderer 完成卡片拖动→持久化该 brick 画布位置(Q19)
+  onSetCardPosition: (brickId: string, x: number, y: number) => void;
 }
 
 // Validate config values crossing the IPC boundary (renderer is still untrusted). / 校验跨 IPC 边界的配置值(renderer 仍视为不可信)
@@ -87,6 +91,14 @@ export function registerIpcHandlers(win: BrowserWindow, deps: IpcDeps): void {
   ipcMain.on(IPC.SET_CARD_SIZE, (_e, brickId: unknown, w: unknown, h: unknown) => {
     if (typeof brickId === 'string' && typeof w === 'number' && typeof h === 'number') {
       deps.onSetCardSize(brickId, w, h);
+    }
+  });
+
+  // Expanded-card positions (Q19): prefill on mount + persist on drag end. / 展开卡位置(Q19):挂载预填 + 拖动结束持久化
+  ipcMain.handle(IPC.GET_CARD_POSITIONS, (): Record<string, CardPos> => deps.onGetCardPositions());
+  ipcMain.on(IPC.SET_CARD_POSITION, (_e, brickId: unknown, x: unknown, y: unknown) => {
+    if (typeof brickId === 'string' && typeof x === 'number' && typeof y === 'number') {
+      deps.onSetCardPosition(brickId, x, y);
     }
   });
 }

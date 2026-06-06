@@ -156,10 +156,9 @@ body {
   color: var(--isle-fg);
 }
 
+/* Canvas of absolutely-positioned cards (Q19); its size is set inline to the union bbox. / 绝对定位卡片的画布(Q19),尺寸由 inline 设为并集包络框 */
 .isle-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  position: relative;
   padding: 6px 12px 14px;
   min-width: 260px;
 }
@@ -168,9 +167,15 @@ body {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 10px 12px;
-  position: relative; /* anchor the resize handle (Q18) / 锚定 resize 手柄(Q18) */
+  position: absolute; /* free canvas placement (Q19); contains the resize handle (Q18) / 自由画布定位(Q19),并容纳 resize 手柄(Q18) */
   overflow: hidden; /* a user-shrunk card clips rather than overflows / 用户缩小后裁剪而非溢出 */
   box-sizing: border-box;
+}
+
+/* Card head doubles as the drag handle (Q19). / 卡头兼作拖动手柄(Q19) */
+.isle-card__head {
+  cursor: move;
+  user-select: none;
 }
 
 /* bottom-right resize handle (Q18) / 右下角 resize 手柄(Q18) */

@@ -132,6 +132,12 @@ function bootstrap(): void {
       winState = { ...winState, cardSizes: { ...winState.cardSizes, [id]: { w, h } } };
       saveWindowState(winState);
     },
+    // Card positions are runtime window state too (Q19) — same store, not layout config. / 卡位置同为运行时窗口状态(Q19)——同一存储,非 layout config
+    onGetCardPositions: () => winState.cardPositions ?? {},
+    onSetCardPosition: (id, x, y) => {
+      winState = { ...winState, cardPositions: { ...winState.cardPositions, [id]: { x, y } } };
+      saveWindowState(winState);
+    },
   });
 
   // Global hotkey toggles pin from anywhere. Re-register cleanly in case bootstrap re-runs. / 全局热键随处切换 pin,bootstrap 重跑则干净重注册

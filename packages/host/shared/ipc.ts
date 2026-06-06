@@ -28,4 +28,8 @@ export const IPC = {
   GET_CARD_SIZES: 'isle:get-card-sizes',
   // renderer → main: a card resize drag ended — persist this brick's card size (Q18). / renderer→main 卡片 resize 拖动结束——持久化该 brick 卡尺寸(Q18)
   SET_CARD_SIZE: 'isle:set-card-size',
+  // renderer ⇄ main (invoke): get persisted expanded-card positions to apply on mount (Q19). / renderer⇄main(invoke)取已存展开卡位置以挂载时应用(Q19)
+  GET_CARD_POSITIONS: 'isle:get-card-positions',
+  // renderer → main: a card drag ended — persist this brick's canvas position (Q19). / renderer→main 卡片拖动结束——持久化该 brick 画布位置(Q19)
+  SET_CARD_POSITION: 'isle:set-card-position',
 } as const;

@@ -23,6 +23,12 @@ export interface CardSize {
   h: number;
 }
 
+// A user-set expanded-card position on the canvas, CSS px relative to the panel (Q19). / 用户设定的展开态卡片在画布上的位置,相对面板的 CSS px(Q19)
+export interface CardPos {
+  x: number;
+  y: number;
+}
+
 // Persisted island window state at ~/.island/window-state.json. NOT layout config (see DESIGN Q11). / 岛窗口状态持久化,非 layout 配置
 export interface WindowState {
   // Top-left of the window (DIP). / 窗口左上角(DIP)
@@ -34,6 +40,8 @@ export interface WindowState {
   pinned: boolean;
   // Per-brick expanded-card sizes the user dragged (Q18). Runtime window state, NOT layout config. / 用户拖过的每 brick 展开卡尺寸(Q18);运行时窗口状态,非 layout config
   cardSizes?: Record<string, CardSize>;
+  // Per-brick expanded-card positions the user dragged on the canvas (Q19). Runtime state, NOT layout config. / 用户在画布上拖过的每 brick 卡片位置(Q19);运行时状态,非 layout config
+  cardPositions?: Record<string, CardPos>;
 }
 
 // Opaque per-brick config values (Q16 ②). The host shuttles key→value, never interprets meaning. / 不透明的每 brick 配置值(Q16 ②);host 只搬运 key→value,不解读含义
@@ -69,4 +77,8 @@ export interface IsleBridge {
   getCardSizes: () => Promise<Record<string, CardSize>>;
   // A resize drag ended → persist this brick's card size (Q18). / 卡片 resize 拖动结束→持久化该 brick 卡尺寸(Q18)
   setCardSize: (brickId: string, w: number, h: number) => void;
+  // Get persisted expanded-card positions to apply on mount (Q19). / 取已存的展开卡位置以在挂载时应用(Q19)
+  getCardPositions: () => Promise<Record<string, CardPos>>;
+  // A card drag ended → persist this brick's canvas position (Q19). / 卡片拖动结束→持久化该 brick 画布位置(Q19)
+  setCardPosition: (brickId: string, x: number, y: number) => void;
 }
