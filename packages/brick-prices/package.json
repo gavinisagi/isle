@@ -1,0 +1,24 @@
+{
+  "name": "@isle/brick-prices",
+  "version": "0.1.0",
+  "description": "Prices brick — reads holdings from an Obsidian file, fetches quotes, emits `metrics`. A downstream brick built ON the Isle protocol (NOT part of host v1). / 行情积木:从 Obsidian 文件读持仓、取行情、推 metrics;建在协议之上的下游积木(不属 host v1)",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "isle-brick-prices": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --max-warnings 0"
+  },
+  "dependencies": {
+    "@isle/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

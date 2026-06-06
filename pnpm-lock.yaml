@@ -33,6 +33,22 @@ importers:
         specifier: ^8.18.1
         version: 8.60.0(eslint@9.39.4)(typescript@5.9.3)
 
+  packages/brick-prices:
+    dependencies:
+      '@isle/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.1
+        version: 22.19.19
+      tsx:
+        specifier: ^4.19.2
+        version: 4.22.3
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/host:
     dependencies:
       '@isle/protocol':
