@@ -10,6 +10,8 @@ import { pushBusSnapshot, pushCollapse, pushPinState, registerIpcHandlers } from
 import { Bus } from './core/bus.js';
 import { PLUGINS_DIR, scanManifests } from './core/registry.js';
 import { watchPlugins } from './core/watcher.js';
+import { ensureSpawned, killAllSpawned, killSpawned } from './core/spawner.js';
+import { loadBrickConfig, saveBrickConfig, toEnv } from './core/brick-config.js';
 import { postAction } from './core/action-client.js';
 import { loadConfig } from './config/load-config.js';
 import { watchConfig } from './config/config-watcher.js';
@@ -59,10 +61,21 @@ function bootstrap(): void {
   bus.onSnapshot(() => pushSnapshot());
 
   // discover already-registered bricks, then watch for live add/remove. / 先发现已注册 brick,再监听增删
-  for (const manifest of scanManifests()) bus.upsertManifest(manifest);
+  // Bricks declaring `launch` are host-managed: spawn on discovery, kill on remove/exit (Q16 ①). / 声明 launch 的 brick 由 host 托管:发现即 spawn、移除/退出即 kill(Q16 ①)
+  // Spawn each brick with its saved config injected as ISLE_CFG_* env (Q16 ①②). / 各 brick 带已存配置作 ISLE_CFG_* env 注入启动(Q16 ①②)
+  for (const manifest of scanManifests()) {
+    bus.upsertManifest(manifest);
+    ensureSpawned(manifest, toEnv(loadBrickConfig(manifest.id)));
+  }
   unwatch = watchPlugins({
-    onUpsert: (m) => bus?.upsertManifest(m),
-    onRemove: (id) => bus?.removeManifest(id),
+    onUpsert: (m) => {
+      bus?.upsertManifest(m);
+      ensureSpawned(m, toEnv(loadBrickConfig(m.id)));
+    },
+    onRemove: (id) => {
+      bus?.removeManifest(id);
+      killSpawned(id);
+    },
   });
   bus.startStaleTimer();
 
@@ -100,6 +113,23 @@ function bootstrap(): void {
     onDragEnd: () => {
       const b = win.getBounds();
       winState = { ...winState, x: b.x, y: b.y, placed: true };
+      saveWindowState(winState);
+    },
+    // Config form prefill (Q16 ②). / 配置表单预填(Q16 ②)
+    onGetBrickConfig: (id) => loadBrickConfig(id),
+    // Save config → persist + respawn the brick with the new env so changes take effect (Q16 ②). / 保存配置→持久化并带新 env 重启 brick 使其生效(Q16 ②)
+    onSetBrickConfig: (id, values) => {
+      saveBrickConfig(id, values);
+      const manifest = bus?.getManifest(id);
+      if (manifest?.launch) {
+        killSpawned(id);
+        ensureSpawned(manifest, toEnv(values));
+      }
+    },
+    // Card sizes are runtime window state (Q18) — read from / written to window-state.json. / 卡尺寸是运行时窗口状态(Q18)——读写 window-state.json
+    onGetCardSizes: () => winState.cardSizes ?? {},
+    onSetCardSize: (id, w, h) => {
+      winState = { ...winState, cardSizes: { ...winState.cardSizes, [id]: { w, h } } };
       saveWindowState(winState);
     },
   });
@@ -149,6 +179,7 @@ app.on('before-quit', () => {
   globalShortcut.unregisterAll();
   unwatch?.();
   unwatchConfig?.();
+  killAllSpawned(); // kill host-managed bricks (Q16 ①) / kill host 托管的 brick(Q16 ①)
   bus?.stop();
   tray?.destroy();
 });
