@@ -9,6 +9,9 @@ export interface Holding {
   name: string;
   // e.g. 股票 / 加密 — drives the Yahoo symbol mapping. / 如 股票 / 加密,驱动 Yahoo 符号映射
   type: string;
+  // Optional explicit Yahoo symbol, overriding the derived one for tricky tickers / 可选显式 Yahoo 符号,覆盖自动推导,用于刁钻标的
+  // (e.g. Stacks → STX4847-USD, HK → 0700.HK, A-share → 600519.SS). / (如 Stacks→STX4847-USD、港股→0700.HK、A股→600519.SS)
+  symbol?: string;
   quantity: number | null;
   cost: number | null;
 }
@@ -23,10 +26,12 @@ export async function readHoldings(path: string): Promise<Holding[]> {
     const h = r as Record<string, unknown>;
     const code = typeof h['code'] === 'string' ? h['code'] : null;
     if (!code) continue;
+    const symbol = typeof h['symbol'] === 'string' && h['symbol'] ? h['symbol'] : undefined;
     out.push({
       code,
       name: typeof h['name'] === 'string' && h['name'] ? h['name'] : code,
       type: typeof h['type'] === 'string' ? h['type'] : '',
+      ...(symbol ? { symbol } : {}),
       quantity: typeof h['quantity'] === 'number' ? h['quantity'] : null,
       cost: typeof h['cost'] === 'number' ? h['cost'] : null,
     });

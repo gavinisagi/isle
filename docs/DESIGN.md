@@ -181,6 +181,7 @@
 | Q20(2026-06-07 · feature,修正 Q19) | Q19 吸附方式:网格吸附 → 磁吸对齐 | 弃用 8px 网格吸附,改为拖动中实时磁吸:卡片边接近 panel 边缘或他卡边时吸住,支持对齐(同边)+ 贴合拼接(边对对边);同宽/同高时对齐阈值由 8px 加强到 18px,促等尺寸卡排齐;x/y 独立计算可拼成磁贴;松手持久化已吸附位置;暂不画参考线。host 仍域无知(只对不透明几何吸附) | 网格吸附只规整坐标、无对齐/拼合力;用户要 brick 间+边缘磁吸拼成完整展开态;同宽同高加强贴合「等尺寸排齐」直觉;实时吸附手感最佳 |
 | Q21(2026-06-07 · feature,修正 Q17) | B2 落地校正:prices→portfolio、数据源 JSON、去 apikey、Yahoo v8 取数 | brick 重命名 `prices`→`portfolio`;数据源改 Obsidian vault 的 JSON `持仓.json`(`holdings:[{code,name,type,quantity,cost,...}]`);去掉 `yfinanceKey`(Yahoo 公开行情免 key);取数用 Yahoo v8 chart(免 key、避 v7 crumb 403)算价格+涨跌%;符号按 type 映射(加密 `-USD`、股票直接 code);label 用中文 name;brick 加 `--once` 验收模式。host 不变、域无知 | 真实持仓是 JSON 且含中文 name/type;yfinance 无 key;v8 chart 比 v7 quote 稳;加密需 `-USD` 后缀 |
 | Q22(2026-06-07 · feature) | `pnpm dev` 一键起 host + 两 mock + portfolio | portfolio 端口 7812→7820(避开 mock 781x、可并存);去 manifest `launch`(dev 经 tsx 起、host 仅连,避免 auto-spawn 抢端口;launch 留待 built 部署);配置走本地 gitignored `.env`(`loadEnvFile`,`.env.example` 入库),与 host 注入并行;root `dev` concurrently 三路;mock 默认只起 `metrics + slow`(CLI 可按名选 slow),全部 script 保留作回归资产、不破 mock-all-green 契约 | 一键起全部 + 1min 刷新;7812 双占须解端口;持仓路径私有走 `.env`;auto-spawn 与手动起抢端口故开发期去 launch;mock 是唯一验收面,只改默认数量不删 script |
+| Q23(2026-06-08 · feature,扩展 Q21) | 持仓 JSON 加可选显式 Yahoo `symbol` 覆盖 | holding 可选 `symbol` 字段,brick 用 `h.symbol ?? toYahooSymbol(h.code, h.type)`;刁钻标的(Stacks `STX4847-USD`、港股 `.HK`、A股 `.SS/.SZ`)由数据显式指定,brick 不维护硬编码映射表 | 通用 `<code>-USD` 推不出 Yahoo 的消歧符号(STX→STX4847-USD);领域知识留数据侧最干净,brick 通用、host 域无知不变 |
 
 ---
 
