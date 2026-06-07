@@ -36,10 +36,13 @@ function registerManifest(preset: Preset): void {
 }
 
 function main(): void {
+  // `slow` is selectable by name too (it lives outside PRESETS since it's a failure-path brick). / slow 也可按名选(不在 PRESETS,因它是失败路径积木)
+  const selectable: Record<string, Preset> = { ...PRESETS, slow: slowPreset };
   const selected = process.argv.slice(2);
-  const presets = (selected.length ? selected : Object.keys(PRESETS))
-    .map((k) => PRESETS[k])
-    .filter((p): p is Preset => Boolean(p));
+  // No args → all render-kind presets (full regression). Args → just those (e.g. `metrics slow`). / 无参→全部 render-kind preset(全量回归);有参→仅这些(如 metrics slow)
+  const presets = (selected.length ? selected.map((k) => selectable[k]) : Object.values(PRESETS)).filter(
+    (p): p is Preset => Boolean(p),
+  );
 
   const chaosOn = process.env['ISLE_MOCK_CHAOS'] === '1';
   const servers: BrickServer[] = [];
@@ -72,11 +75,14 @@ function main(): void {
   if (chaosOn) {
     // Slow brick: connects but never pushes → host must derive `stale` from heartbeat. / slow 积木:连上但永不推送→host 必须据 heartbeat 推 stale
     // Deliberately NOT subjected to connection-drops so it stays connected-and-silent. / 故意不注入断连,让它保持"连着且沉默"
-    registerManifest(slowPreset);
-    const slowServer = createBrickServer({ port: slowPreset.manifest.port });
-    servers.push(slowServer);
-    cancels.push(runScript(slowPreset.script, slowServer.broadcast));
-    console.log(`▶ ${slowPreset.manifest.id} (silent, heartbeat ${slowPreset.manifest.heartbeat}ms → stale) on :${slowPreset.manifest.port}`);
+    // Skip if it was already started by name (e.g. `… slow`) to avoid a double port bind. / 若已按名启动(如 `… slow`)则跳过,避免端口重复绑定
+    if (!presets.includes(slowPreset)) {
+      registerManifest(slowPreset);
+      const slowServer = createBrickServer({ port: slowPreset.manifest.port });
+      servers.push(slowServer);
+      cancels.push(runScript(slowPreset.script, slowServer.broadcast));
+      console.log(`▶ ${slowPreset.manifest.id} (silent, heartbeat ${slowPreset.manifest.heartbeat}ms → stale) on :${slowPreset.manifest.port}`);
+    }
     console.log('[chaos] enabled / 已启用');
   }
 

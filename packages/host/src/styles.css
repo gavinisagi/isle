@@ -156,10 +156,9 @@ body {
   color: var(--isle-fg);
 }
 
+/* Canvas of absolutely-positioned cards (Q19); its size is set inline to the union bbox. / 绝对定位卡片的画布(Q19),尺寸由 inline 设为并集包络框 */
 .isle-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  position: relative;
   padding: 6px 12px 14px;
   min-width: 260px;
 }
@@ -168,6 +167,38 @@ body {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 10px 12px;
+  position: absolute; /* free canvas placement (Q19); contains the resize handle (Q18) / 自由画布定位(Q19),并容纳 resize 手柄(Q18) */
+  overflow: hidden; /* a user-shrunk card clips rather than overflows / 用户缩小后裁剪而非溢出 */
+  box-sizing: border-box;
+}
+
+/* Card head doubles as the drag handle (Q19). / 卡头兼作拖动手柄(Q19) */
+.isle-card__head {
+  cursor: move;
+  user-select: none;
+}
+
+/* bottom-right resize handle (Q18) / 右下角 resize 手柄(Q18) */
+.isle-card__resize {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  border-radius: 0 0 10px 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0 50%,
+    var(--isle-dim) 50% 60%,
+    transparent 60% 70%,
+    var(--isle-dim) 70% 80%,
+    transparent 80%
+  );
+  opacity: 0.45;
+}
+.isle-card__resize:hover {
+  opacity: 0.9;
 }
 
 .isle-card__head {
@@ -205,6 +236,75 @@ body {
 
 .isle-card__empty {
   color: var(--isle-dim);
+}
+
+/* config gear + domain-blind config form (Q16 ②) / 配置齿轮 + 域无知配置表单(Q16 ②) */
+.isle-card__gear {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--isle-dim);
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.isle-card__gear:hover {
+  color: var(--isle-fg);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.isle-config {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+.isle-config__row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.isle-config__label {
+  color: var(--isle-dim);
+  font-size: 11px;
+}
+.isle-config__input {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  padding: 5px 8px;
+  color: var(--isle-fg);
+  font-size: 12px;
+  outline: none;
+}
+.isle-config__input:focus {
+  border-color: var(--tone-active);
+}
+.isle-config__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+.isle-config__btn {
+  appearance: none;
+  border: none;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  background: var(--tone-active);
+  color: #fff;
+}
+.isle-config__btn--ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--isle-fg);
+}
+.isle-config__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 /* conn-state badge colors / 连接态角标配色 */

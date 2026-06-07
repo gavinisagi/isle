@@ -1,7 +1,7 @@
 // Main-side IPC: receive renderer requests, expose a snapshot pusher. / 主进程 IPC:接收 renderer 请求,暴露快照推送
 import { ipcMain, screen, type BrowserWindow } from 'electron';
 import { IPC } from '../../shared/ipc.js';
-import type { BusSnapshot } from '../../shared/types.js';
+import type { BrickConfigValues, BusSnapshot, CardPos, CardSize } from '../../shared/types.js';
 import { applyResize } from '../window/resize.js';
 import { setPosition } from '../window/geometry.js';
 
@@ -14,6 +14,24 @@ export interface IpcDeps {
   onSetPinned: (pinned: boolean) => void;
   // A peek-row drag session ended → persist the final window position as a user placement (Q14). / peek 整行拖动结束→持久化最终窗口位置为用户放置(Q14)
   onDragEnd: () => void;
+  // Renderer opened a brick's config form → return its saved values to prefill (Q16 ②). / renderer 打开某 brick 配置表单→返回已存值供预填(Q16 ②)
+  onGetBrickConfig: (brickId: string) => BrickConfigValues;
+  // Renderer saved a brick's config → persist + respawn with the new env (Q16 ②). / renderer 保存某 brick 配置→持久化+带新 env 重启(Q16 ②)
+  onSetBrickConfig: (brickId: string, values: BrickConfigValues) => void;
+  // Renderer mounted the expanded panel → return persisted card sizes (Q18). / renderer 挂载展开面板→返回已存卡尺寸(Q18)
+  onGetCardSizes: () => Record<string, CardSize>;
+  // Renderer finished a card resize drag → persist this brick's size (Q18). / renderer 完成卡片 resize 拖动→持久化该 brick 尺寸(Q18)
+  onSetCardSize: (brickId: string, w: number, h: number) => void;
+  // Renderer mounted the expanded panel → return persisted card positions (Q19). / renderer 挂载展开面板→返回已存卡位置(Q19)
+  onGetCardPositions: () => Record<string, CardPos>;
+  // Renderer finished a card drag → persist this brick's canvas position (Q19). / renderer 完成卡片拖动→持久化该 brick 画布位置(Q19)
+  onSetCardPosition: (brickId: string, x: number, y: number) => void;
+}
+
+// Validate config values crossing the IPC boundary (renderer is still untrusted). / 校验跨 IPC 边界的配置值(renderer 仍视为不可信)
+function isConfigValues(v: unknown): v is BrickConfigValues {
+  if (typeof v !== 'object' || v === null) return false;
+  return Object.values(v).every((x) => typeof x === 'string' || typeof x === 'number');
 }
 
 export function registerIpcHandlers(win: BrowserWindow, deps: IpcDeps): void {
@@ -58,6 +76,30 @@ export function registerIpcHandlers(win: BrowserWindow, deps: IpcDeps): void {
     if (!dragOrigin) return;
     dragOrigin = null;
     deps.onDragEnd();
+  });
+
+  // Config form (Q16 ②): invoke/handle for prefill + save. Save triggers persist + respawn in main. / 配置表单(Q16 ②):invoke/handle 取值预填 + 保存;保存在 main 触发持久化 + 重启
+  ipcMain.handle(IPC.GET_BRICK_CONFIG, (_e, brickId: unknown): BrickConfigValues =>
+    typeof brickId === 'string' ? deps.onGetBrickConfig(brickId) : {},
+  );
+  ipcMain.handle(IPC.SET_BRICK_CONFIG, (_e, brickId: unknown, values: unknown): void => {
+    if (typeof brickId === 'string' && isConfigValues(values)) deps.onSetBrickConfig(brickId, values);
+  });
+
+  // Expanded-card sizes (Q18): prefill on mount + persist on resize-drag end. / 展开卡尺寸(Q18):挂载预填 + resize 拖动结束持久化
+  ipcMain.handle(IPC.GET_CARD_SIZES, (): Record<string, CardSize> => deps.onGetCardSizes());
+  ipcMain.on(IPC.SET_CARD_SIZE, (_e, brickId: unknown, w: unknown, h: unknown) => {
+    if (typeof brickId === 'string' && typeof w === 'number' && typeof h === 'number') {
+      deps.onSetCardSize(brickId, w, h);
+    }
+  });
+
+  // Expanded-card positions (Q19): prefill on mount + persist on drag end. / 展开卡位置(Q19):挂载预填 + 拖动结束持久化
+  ipcMain.handle(IPC.GET_CARD_POSITIONS, (): Record<string, CardPos> => deps.onGetCardPositions());
+  ipcMain.on(IPC.SET_CARD_POSITION, (_e, brickId: unknown, x: unknown, y: unknown) => {
+    if (typeof brickId === 'string' && typeof x === 'number' && typeof y === 'number') {
+      deps.onSetCardPosition(brickId, x, y);
+    }
   });
 }
 

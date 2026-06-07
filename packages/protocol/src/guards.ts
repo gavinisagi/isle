@@ -1,7 +1,7 @@
 // Hand-written runtime validation for UNTRUSTED brick data. / 对不可信 brick 数据的手写运行时校验
 // Used at the host's main-process ingest boundary: parse → null on bad → drop the frame, never crash. / 用于 host 主进程 ingest 边界:坏帧返回 null 丢弃,绝不崩
 // Zero deps by design — a brick can be written in ~20 lines in any language, so the host must police the wire. / 刻意零依赖,brick 任意语言 ~20 行可写,故 host 必须看守 wire
-import type { Manifest } from './manifest.js';
+import type { Manifest, ManifestConfigField } from './manifest.js';
 import type { Control, ListItem, MetricItem, Signal, StatusItem, TextBlock } from './signal.js';
 import { isRenderKind } from './render-kind.js';
 import { isMetricTone, isStatusTone } from './tone.js';
@@ -59,6 +59,17 @@ function isControl(v: unknown): v is Control {
   return isObject(v) && isString(v.label) && isString(v.action);
 }
 
+// Manifest config field (Q16). Host stays domain-blind: only the widget `type` is validated. / manifest 配置项(Q16);host 域无知,只校验控件 type
+function isConfigField(v: unknown): v is ManifestConfigField {
+  return (
+    isObject(v) &&
+    isString(v.key) &&
+    isString(v.label) &&
+    (v.type === 'string' || v.type === 'number' || v.type === 'secret') &&
+    (v.default === undefined || isString(v.default) || typeof v.default === 'number')
+  );
+}
+
 function arrayOf<T>(v: unknown, pred: (x: unknown) => x is T): v is T[] {
   return Array.isArray(v) && v.every(pred);
 }
@@ -101,7 +112,7 @@ export function parseSignal(raw: unknown): Signal | null {
 // Parse an untrusted manifest. Returns a typed Manifest or null. / 解析不可信 manifest,返回类型化 Manifest 或 null
 export function parseManifest(raw: unknown): Manifest | null {
   if (!isObject(raw)) return null;
-  const { id, name, port, emits, collapsed, actions, heartbeat, launch } = raw;
+  const { id, name, port, emits, collapsed, actions, heartbeat, config, launch } = raw;
 
   if (!isString(id) || !isString(name)) return null;
   if (typeof port !== 'number' || !Number.isInteger(port) || port < 1 || port > 65535) return null;
@@ -110,6 +121,7 @@ export function parseManifest(raw: unknown): Manifest | null {
   if (!isObject(collapsed) || !isString(collapsed.glyph) || !optString(collapsed.badge)) return null;
   if (actions !== undefined && !isStringArray(actions)) return null;
   if (heartbeat !== undefined && (typeof heartbeat !== 'number' || heartbeat <= 0)) return null;
+  if (config !== undefined && !arrayOf(config, isConfigField)) return null;
   if (!optString(launch)) return null;
 
   const manifest: Manifest = {
@@ -121,6 +133,7 @@ export function parseManifest(raw: unknown): Manifest | null {
   };
   if (actions !== undefined) manifest.actions = actions;
   if (heartbeat !== undefined) manifest.heartbeat = heartbeat;
+  if (config !== undefined) manifest.config = config;
   if (launch !== undefined) manifest.launch = launch;
   return manifest;
 }

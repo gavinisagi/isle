@@ -1,0 +1,24 @@
+{
+  "name": "@isle/brick-portfolio",
+  "version": "0.1.0",
+  "description": "Portfolio brick — reads holdings from an Obsidian vault JSON, fetches Yahoo quotes, emits `metrics`. A downstream brick built ON the Isle protocol (NOT part of host v1). / 持仓积木:从 Obsidian vault JSON 读持仓、取 Yahoo 行情、推 metrics;建在协议之上的下游积木(不属 host v1)",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "isle-brick-portfolio": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --max-warnings 0"
+  },
+  "dependencies": {
+    "@isle/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -20,4 +20,16 @@ export const IPC = {
   DRAG_MOVE: 'isle:drag-move',
   // renderer → main: end the drag session — main persists the final position as a user placement. / renderer→main 结束拖动——main 持久化最终位置为用户放置
   DRAG_END: 'isle:drag-end',
+  // renderer ⇄ main (invoke): get a brick's saved config values to prefill the form (Q16 ②). / renderer⇄main(invoke)取某 brick 已存配置值以预填表单(Q16 ②)
+  GET_BRICK_CONFIG: 'isle:get-brick-config',
+  // renderer ⇄ main (invoke): save a brick's config values → persist + respawn with new env (Q16 ②). / renderer⇄main(invoke)保存配置值→持久化+带新 env 重启(Q16 ②)
+  SET_BRICK_CONFIG: 'isle:set-brick-config',
+  // renderer ⇄ main (invoke): get persisted expanded-card sizes to apply on mount (Q18). / renderer⇄main(invoke)取已存展开卡尺寸以挂载时应用(Q18)
+  GET_CARD_SIZES: 'isle:get-card-sizes',
+  // renderer → main: a card resize drag ended — persist this brick's card size (Q18). / renderer→main 卡片 resize 拖动结束——持久化该 brick 卡尺寸(Q18)
+  SET_CARD_SIZE: 'isle:set-card-size',
+  // renderer ⇄ main (invoke): get persisted expanded-card positions to apply on mount (Q19). / renderer⇄main(invoke)取已存展开卡位置以挂载时应用(Q19)
+  GET_CARD_POSITIONS: 'isle:get-card-positions',
+  // renderer → main: a card drag ended — persist this brick's canvas position (Q19). / renderer→main 卡片拖动结束——持久化该 brick 画布位置(Q19)
+  SET_CARD_POSITION: 'isle:set-card-position',
 } as const;
