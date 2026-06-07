@@ -11,9 +11,10 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
-    "dev": "concurrently -k -n host,mock -c blue,green \"pnpm dev:host\" \"pnpm dev:mock\"",
+    "dev": "concurrently -k -n host,mock,portfolio -c blue,green,magenta \"pnpm dev:host\" \"pnpm dev:mock\" \"pnpm dev:portfolio\"",
     "dev:host": "pnpm -F @isle/host dev",
-    "dev:mock": "pnpm -F @isle/mock-brick dev",
+    "dev:mock": "pnpm -F @isle/mock-brick dev -- metrics slow",
+    "dev:portfolio": "pnpm -F @isle/brick-portfolio dev",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"
