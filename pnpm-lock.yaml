@@ -33,7 +33,7 @@ importers:
         specifier: ^8.18.1
         version: 8.60.0(eslint@9.39.4)(typescript@5.9.3)
 
-  packages/brick-prices:
+  packages/brick-portfolio:
     dependencies:
       '@isle/protocol':
         specifier: workspace:*
