@@ -59,7 +59,8 @@ function toMetrics(quotes: Quote[]): Signal {
 async function buildSignal(holdingsPath: string | undefined): Promise<Signal> {
   const holdings = holdingsPath ? await readHoldings(holdingsPath) : [];
   const quotes = await fetchQuotes(
-    holdings.map((h) => ({ symbol: toYahooSymbol(h.code, h.type), code: h.code, name: h.name })),
+    // Explicit `symbol` wins over the derived one for tricky tickers (Q23). / 刁钻标的优先用显式 symbol(Q23)
+    holdings.map((h) => ({ symbol: h.symbol ?? toYahooSymbol(h.code, h.type), code: h.code, name: h.name })),
   );
   return toMetrics(quotes);
 }
